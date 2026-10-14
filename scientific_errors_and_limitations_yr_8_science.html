@@ -1,462 +1,856 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Year 8 Science: Graph Trends & Assumptions Masterclass</title>
-  <!-- Chart.js CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- FontAwesome for Icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-dark: #1d4ed8;
-      --secondary: #0d9488;
-      --accent: #f59e0b;
-      --danger: #ef4444;
-      --success: #10b981;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #1e293b;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; }
-
-    header {
-      background: linear-gradient(135deg, #1e3a8a, #2563eb);
-      color: white;
-      padding: 24px;
-      border-radius: 12px;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-
-    .header-text h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
-    .header-text p { font-size: 0.95rem; opacity: 0.9; }
-
-    .score-badge {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.3);
-      padding: 12px 20px;
-      border-radius: 50px;
-      text-align: center;
-    }
-    .score-badge .pts { font-size: 1.5rem; font-weight: 800; color: #fde047; }
-    .score-badge .lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
-
-    /* Concept Banner */
-    .concept-box {
-      background-color: #eff6ff;
-      border-left: 4px solid var(--primary);
-      padding: 16px;
-      border-radius: 0 8px 8px 0;
-      margin-bottom: 24px;
-    }
-    .concept-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 16px;
-      margin-top: 12px;
-    }
-    .concept-card {
-      background: white;
-      padding: 12px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-    }
-    .concept-card h4 { font-size: 0.9rem; color: var(--primary-dark); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .concept-card p { font-size: 0.85rem; color: var(--text-muted); }
-
-    /* Nav Tabs */
-    .scenario-nav {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 20px;
-    }
-    .nav-btn {
-      padding: 10px 18px;
-      background: white;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .nav-btn:hover { background: #f1f5f9; color: var(--text); }
-    .nav-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-      box-shadow: 0 2px 4px rgba(37,99,235,0.2);
-    }
-
-    /* Main Workspace Layout */
-    .workspace {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-    @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid var(--border);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-
-    .chart-container { position: relative; height: 320px; width: 100%; }
-
-    /* Interactive Inputs */
-    .mode-toggle {
-      display: flex;
-      background: #f1f5f9;
-      padding: 4px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    }
-    .mode-btn {
-      flex: 1;
-      padding: 8px;
-      text-align: center;
-      border: none;
-      background: transparent;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      border-radius: 6px;
-      color: var(--text-muted);
-    }
-    .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-
-    .input-section { margin-bottom: 16px; }
-    .input-section label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; color: var(--text); }
-    
-    select, textarea, input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--primary); }
-    textarea { height: 80px; resize: vertical; }
-
-    .btn {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 6px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-secondary { background: #e2e8f0; color: var(--text); }
-    .btn-secondary:hover { background: #cbd5e1; }
-
-    /* Feedback & Model Answer */
-    .feedback-box {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-      display: none;
-    }
-    .feedback-box.correct { background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; }
-    .feedback-box.partial { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
-    .feedback-box.incorrect { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
-
-    .model-answer {
-      margin-top: 16px;
-      background: #f8fafc;
-      border: 1px dashed #cbd5e1;
-      border-radius: 8px;
-      padding: 14px;
-      display: none;
-    }
-    .model-answer h5 { color: var(--primary-dark); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; }
-    
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; }
-    .tag-trend { background: #dbeafe; color: #1e40af; }
-    .tag-evid { background: #d1fae5; color: #065f46; }
-    .tag-outlier { background: #f3e8ff; color: #6b21a8; }
-    .tag-assump { background: #ffedd5; color: #9a3412; }
-
-    /* Summary Bar */
-    .summary-footer {
-      margin-top: 24px;
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      border: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Science Inquiry: Errors & Limitations Masterclass</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .badge-locked { filter: grayscale(1); opacity: 0.4; }
+        .badge-unlocked { filter: grayscale(0); opacity: 1; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { 0% { transform: scale(0.5); } 100% { transform: scale(1); } }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
 </head>
-<body>
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-<div class="container">
-  <header>
-    <div class="header-text">
-      <h1><i class="fa-solid fa-chart-line"></i> Graph Trends & Assumptions Tool</h1>
-      <p>Year 8 Science • Describing Patterns, Citing Numerical Evidence, Spotting Highlights & Stating Assumptions</p>
-    </div>
-    <div class="score-badge">
-      <div class="pts" id="totalScore">0</div>
-      <div class="lbl">Total XP</div>
-    </div>
-  </header>
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 py-3 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="bg-indigo-600 p-2.5 rounded-xl text-white shadow-inner">
+                    <i class="fa-solid fa-magnifying-glass-chart text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-extrabold tracking-tight">Science Inquiry: Errors & Limitations</h1>
+                    <p class="text-xs text-indigo-300 font-medium">Year 8 Science • Science Inquiry Skills (SIS)</p>
+                </div>
+            </div>
 
-  <!-- Framework Concept Box -->
-  <div class="concept-box">
-    <strong style="color: var(--primary-dark);"><i class="fa-solid fa-lightbulb"></i> The 4-Part Graph Analysis Formula:</strong>
-    <div class="concept-grid">
-      <div class="concept-card">
-        <h4><span class="tag tag-trend">1. TREND</span> General Direction</h4>
-        <p>Does the line increase, decrease, fluctuate, or stay constant over time?</p>
-      </div>
-      <div class="concept-card">
-        <h4><span class="tag tag-evid">2. EVIDENCE</span> Specific Numbers</h4>
-        <p>Quote starting, ending, or peak values with correct units (e.g., from 30 km to 2,890 km).</p>
-      </div>
-      <div class="concept-card">
-        <h4><span class="tag tag-outlier">3. HIGHLIGHTS</span> Dips / Peaks</h4>
-        <p>Mention sudden changes, maximums, minimums, or unusual outliers.</p>
-      </div>
-      <div class="concept-card">
-        <h4><span class="tag tag-assump">4. ASSUMPTION</span> Underlying Premise</h4>
-        <p>What must be true for this data/trend to hold valid between or beyond points?</p>
-      </div>
-    </div>
-  </div>
+            <!-- XP and Badge Bar -->
+            <div class="flex items-center space-x-4">
+                <div class="bg-slate-800 border border-slate-700 rounded-xl px-3.5 py-1.5 flex items-center space-x-3">
+                    <div class="flex items-center space-x-1.5 text-amber-400 font-black text-sm">
+                        <i class="fa-solid fa-bolt text-amber-400"></i>
+                        <span id="xp-display">0 XP</span>
+                    </div>
+                    <div class="h-4 w-[1px] bg-slate-700"></div>
+                    <div class="flex items-center space-x-1">
+                        <span id="badge-1" class="badge-locked text-lg" title="Error Detective (Complete Diagnostic)"><i class="fa-solid fa-user-ninja text-blue-400"></i></span>
+                        <span id="badge-2" class="badge-locked text-lg" title="Method Master (Complete Stage 1 & 2)"><i class="fa-solid fa-shield-halved text-emerald-400"></i></span>
+                        <span id="badge-3" class="badge-locked text-lg" title="Precision Pro (Complete Stage 3 & 4)"><i class="fa-solid fa-award text-amber-400"></i></span>
+                    </div>
+                </div>
 
-  <!-- Scenario Navigation -->
-  <div class="scenario-nav" id="scenarioNav"></div>
+                <button onclick="showSummaryModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-md">
+                    <i class="fa-solid fa-file-invoice"></i> <span class="hidden sm:inline">My Summary</span>
+                </button>
+            </div>
+        </div>
+    </header>
 
-  <!-- Main Interactive Panel -->
-  <div class="workspace">
-    <!-- Left: Graph & Meta -->
-    <div class="card">
-      <h3 id="scenarioTitle" style="margin-bottom: 4px;">Scenario Title</h3>
-      <p id="scenarioDesc" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px;">Description</p>
-      
-      <div class="chart-container">
-        <canvas id="mainChart"></canvas>
-      </div>
+    <main class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 w-full flex-grow">
+        
+        <!-- Gradual Release Framework Tabs -->
+        <div class="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 mb-6 grid grid-cols-2 lg:grid-cols-5 gap-2">
+            <button onclick="switchStage(0)" id="stage-btn-0" class="stage-tab p-2.5 rounded-xl text-left transition flex items-center space-x-3 bg-indigo-600 text-white shadow-md">
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-black text-sm">0</div>
+                <div class="overflow-hidden">
+                    <div class="text-[10px] uppercase font-bold tracking-wider opacity-80">Preparation</div>
+                    <div class="text-xs font-extrabold truncate">Concept Intro</div>
+                </div>
+            </button>
 
-      <div id="scenarioContext" style="margin-top: 16px; font-size: 0.85rem; background: #f1f5f9; padding: 10px; border-radius: 6px;">
-        <!-- Dynamic contextual hints/notes -->
-      </div>
-    </div>
+            <button onclick="switchStage(1)" id="stage-btn-1" class="stage-tab p-2.5 rounded-xl text-left transition flex items-center space-x-3 hover:bg-slate-100 text-slate-700">
+                <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-black text-sm">1</div>
+                <div class="overflow-hidden">
+                    <div class="text-[10px] uppercase font-bold text-blue-600 tracking-wider">Stage 1: I DO</div>
+                    <div class="text-xs font-bold truncate">Guided Walkthrough</div>
+                </div>
+            </button>
 
-    <!-- Right: Student Interactive Input -->
-    <div class="card">
-      <div class="mode-toggle">
-        <button class="mode-btn active" onclick="setMode('guided')"><i class="fa-solid fa-list-check"></i> Guided Sentence Builder</button>
-        <button class="mode-btn" onclick="setMode('freetext')"><i class="fa-solid fa-pen"></i> Free-Text Challenge</button>
-      </div>
+            <button onclick="switchStage(2)" id="stage-btn-2" class="stage-tab p-2.5 rounded-xl text-left transition flex items-center space-x-3 hover:bg-slate-100 text-slate-700">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-black text-sm">2</div>
+                <div class="overflow-hidden">
+                    <div class="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Stage 2: WE DO</div>
+                    <div class="text-xs font-bold truncate">Classify & Complete</div>
+                </div>
+            </button>
 
-      <!-- GUIDED MODE -->
-      <div id="guidedPanel">
-        <div class="input-section">
-          <label>1. Select Overall Trend:</label>
-          <select id="selectTrend"></select>
+            <button onclick="switchStage(3)" id="stage-btn-3" class="stage-tab p-2.5 rounded-xl text-left transition flex items-center space-x-3 hover:bg-slate-100 text-slate-700">
+                <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-black text-sm">3</div>
+                <div class="overflow-hidden">
+                    <div class="text-[10px] uppercase font-bold text-purple-600 tracking-wider">Stage 3: YOU DO</div>
+                    <div class="text-xs font-bold truncate">Independent Analysis</div>
+                </div>
+            </button>
+
+            <button onclick="switchStage(4)" id="stage-btn-4" class="stage-tab col-span-2 lg:col-span-1 p-2.5 rounded-xl text-left transition flex items-center space-x-3 hover:bg-slate-100 text-slate-700">
+                <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-black text-sm">4</div>
+                <div class="overflow-hidden">
+                    <div class="text-[10px] uppercase font-bold text-amber-600 tracking-wider">Stage 4: MASTERY</div>
+                    <div class="text-xs font-bold truncate">Design Improvement</div>
+                </div>
+            </button>
         </div>
 
-        <div class="input-section">
-          <label>2. Select Data Evidence (Numbers + Units):</label>
-          <select id="selectEvidence"></select>
+        <div id="stage-content-0" class="stage-panel space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="p-3 bg-indigo-100 text-indigo-700 rounded-xl">
+                        <i class="fa-solid fa-book-open-reader text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Key Inquiry Concepts: Errors vs. Limitations</h2>
+                        <p class="text-xs text-slate-500">Read the definitions carefully before starting the diagnostic check.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 text-blue-900 font-bold text-sm">
+                            <i class="fa-solid fa-shuffle text-blue-600"></i>
+                            <span>Random Errors</span>
+                        </div>
+                        <p class="text-xs text-blue-950 leading-relaxed">
+                            Unpredictable variations in measurement that cause readings to scatter above and below the true value.
+                        </p>
+                        <div class="text-[11px] bg-white p-2 rounded-lg border border-blue-100 text-slate-600">
+                            <strong>Examples:</strong> Human reaction time on stopwatches, parallax error when reading a scale from an angle, sudden wind gusts.
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 text-amber-900 font-bold text-sm">
+                            <i class="fa-solid fa-scale-unbalanced text-amber-600"></i>
+                            <span>Systematic Errors</span>
+                        </div>
+                        <p class="text-xs text-amber-950 leading-relaxed">
+                            Consistent errors that shift all measurements in the <em>same direction</em> away from the true value every time.
+                        </p>
+                        <div class="text-[11px] bg-white p-2 rounded-lg border border-amber-100 text-slate-600">
+                            <strong>Examples:</strong> A scale not zeroed properly (zero error), a ruler with a worn-off end, thermometer calibrated incorrectly.
+                        </div>
+                    </div>
+
+                    <div class="p-4 bg-purple-50 border border-purple-200 rounded-xl space-y-2">
+                        <div class="flex items-center space-x-2 text-purple-900 font-bold text-sm">
+                            <i class="fa-solid fa-sliders text-purple-600"></i>
+                            <span>Method Limitations</span>
+                        </div>
+                        <p class="text-xs text-purple-950 leading-relaxed">
+                            Flaws in how the experiment is designed, equipment limits, or variables that were not controlled properly.
+                        </p>
+                        <div class="text-[11px] bg-white p-2 rounded-lg border border-purple-100 text-slate-600">
+                            <strong>Examples:</strong> Too small sample size, measuring heat loss without beaker insulation, inconsistent stirring speed.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-5 rounded-xl border border-slate-200 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check text-indigo-600"></i> Diagnostic Check: Test Your Knowledge
+                        </h3>
+                        <span class="text-xs bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-full font-bold">+30 XP</span>
+                    </div>
+
+                    <div class="space-y-4 text-xs">
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                            <p class="font-bold text-slate-800">1. A student misreads a measuring cylinder because they looked at it from above instead of eye level. What type of flaw is this?</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <button onclick="answerDiagnostic(1, 'A', false)" class="diag-opt-1 p-2 border rounded-lg hover:bg-slate-50 text-left">Systematic Error</button>
+                                <button onclick="answerDiagnostic(1, 'B', true)" class="diag-opt-1 p-2 border rounded-lg hover:bg-slate-50 text-left">Random Error (Parallax Error)</button>
+                                <button onclick="answerDiagnostic(1, 'C', false)" class="diag-opt-1 p-2 border rounded-lg hover:bg-slate-50 text-left">Method Limitation</button>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                            <p class="font-bold text-slate-800">2. An electronic balance reads 0.5g even when nothing is placed on it, making every reading 0.5g too heavy. What is this called?</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <button onclick="answerDiagnostic(2, 'A', true)" class="diag-opt-2 p-2 border rounded-lg hover:bg-slate-50 text-left">Systematic Error (Zero Error)</button>
+                                <button onclick="answerDiagnostic(2, 'B', false)" class="diag-opt-2 p-2 border rounded-lg hover:bg-slate-50 text-left">Random Error</button>
+                                <button onclick="answerDiagnostic(2, 'C', false)" class="diag-opt-2 p-2 border rounded-lg hover:bg-slate-50 text-left">Uncontrolled Variable</button>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white rounded-lg border border-slate-200 space-y-2">
+                            <p class="font-bold text-slate-800">3. Testing a new fertilizer on only 1 single plant in total is a flaw in the experimental setup. How is this classified?</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                <button onclick="answerDiagnostic(3, 'A', false)" class="diag-opt-3 p-2 border rounded-lg hover:bg-slate-50 text-left">Random Human Error</button>
+                                <button onclick="answerDiagnostic(3, 'B', false)" class="diag-opt-3 p-2 border rounded-lg hover:bg-slate-50 text-left">Calibration Error</button>
+                                <button onclick="answerDiagnostic(3, 'C', true)" class="diag-opt-3 p-2 border rounded-lg hover:bg-slate-50 text-left">Method Limitation (Small Sample Size)</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="diag-feedback" class="hidden text-xs p-3 rounded-lg font-semibold"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="input-section">
-          <label>3. Select Key Highlight or Outlier:</label>
-          <select id="selectHighlight"></select>
+        <div id="stage-content-1" class="stage-panel hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 uppercase">Stage 1: Guided Walkthrough (I DO)</span>
+                        <h2 class="text-xl font-extrabold text-slate-900 mt-1">Scenario 1: Water Heating Experiment</h2>
+                    </div>
+                    <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-semibold">Teacher Mode Active</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-6 space-y-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-700">
+                            <strong>Experimental Setup:</strong> Students heated 100 mL of water in an open glass beaker using a Bunsen burner. They recorded the temperature using a glass liquid thermometer every minute.
+                        </div>
+
+                        <!-- Dynamic Canvas Diagram -->
+                        <div class="relative bg-slate-900 rounded-xl p-4 h-64 flex items-center justify-center overflow-hidden border border-slate-800">
+                            <svg viewBox="0 0 300 200" class="w-full h-full">
+                                <!-- Beaker and Bunsen Burner -->
+                                <rect x="120" y="160" width="60" height="20" fill="#64748b" rx="2"/>
+                                <path d="M 140 160 L 145 130 L 155 130 L 160 160 Z" fill="#94a3b8"/>
+                                <ellipse cx="150" cy="120" rx="12" ry="18" fill="#f59e0b" opacity="0.8"/>
+                                <ellipse cx="150" cy="122" rx="6" ry="10" fill="#ef4444" opacity="0.9"/>
+                                
+                                <!-- Beaker -->
+                                <path d="M 110 50 L 110 120 Q 110 130 120 130 L 180 130 Q 190 130 190 120 L 190 50" fill="none" stroke="#cbd5e1" stroke-width="4"/>
+                                <rect x="112" y="70" width="76" height="58" fill="#38bdf8" opacity="0.4" rx="2"/>
+                                
+                                <!-- Heat Loss Arrows -->
+                                <path d="M 125 65 Q 120 40 105 35" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="3,3"/>
+                                <path d="M 175 65 Q 180 40 195 35" fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="3,3"/>
+                                <text x="75" y="30" fill="#f87171" font-size="9" font-weight="bold">Heat Loss to Surroundings</text>
+
+                                <!-- Thermometer Touching Bottom -->
+                                <line x1="150" y1="30" x2="150" y2="128" stroke="#ef4444" stroke-width="3"/>
+                                <circle cx="150" cy="128" r="4" fill="#dc2626"/>
+                                <text x="160" y="130" fill="#fca5a5" font-size="9" font-weight="bold">Thermometer touching glass bottom!</text>
+                            </svg>
+                        </div>
+
+                        <!-- Chart preview -->
+                        <div class="h-44 bg-white p-2 rounded-xl border border-slate-200">
+                            <canvas id="chartStage1"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Walkthrough Callouts -->
+                    <div class="lg:col-span-6 space-y-3">
+                        <h3 class="text-sm font-bold text-slate-800">Identified Limitations & Errors (Click to explore):</h3>
+                        
+                        <div onclick="highlightSpot(1)" class="p-3 bg-red-50 hover:bg-red-100/80 border border-red-200 rounded-xl cursor-pointer transition">
+                            <div class="flex items-center justify-between text-xs font-bold text-red-900">
+                                <span>1. Heat Loss (Method Limitation)</span>
+                                <span class="bg-red-200 text-red-900 px-2 py-0.5 rounded text-[10px]">Uninsulated</span>
+                            </div>
+                            <p class="text-xs text-slate-700 mt-1">An open glass beaker loses thermal energy to the surrounding air. This means the water takes longer to heat than expected.</p>
+                        </div>
+
+                        <div onclick="highlightSpot(2)" class="p-3 bg-amber-50 hover:bg-amber-100/80 border border-amber-200 rounded-xl cursor-pointer transition">
+                            <div class="flex items-center justify-between text-xs font-bold text-amber-900">
+                                <span>2. Thermometer Bulb Position (Systematic Error)</span>
+                                <span class="bg-amber-200 text-amber-900 px-2 py-0.5 rounded text-[10px]">Placement Error</span>
+                            </div>
+                            <p class="text-xs text-slate-700 mt-1">If the thermometer rests on the bottom of the beaker, it measures the direct temperature of the heated glass rather than the liquid water!</p>
+                        </div>
+
+                        <div onclick="highlightSpot(3)" class="p-3 bg-blue-50 hover:bg-blue-100/80 border border-blue-200 rounded-xl cursor-pointer transition">
+                            <div class="flex items-center justify-between text-xs font-bold text-blue-900">
+                                <span>3. Eye Level / Meniscus (Random Error)</span>
+                                <span class="bg-blue-200 text-blue-900 px-2 py-0.5 rounded text-[10px]">Parallax Error</span>
+                            </div>
+                            <p class="text-xs text-slate-700 mt-1">Reading the thermometer scale from slightly above or below eye level causes minor random fluctuation in recorded values.</p>
+                        </div>
+
+                        <button onclick="finishStage1()" class="w-full mt-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow flex items-center justify-center gap-2">
+                            <span>Complete Stage 1 & Unlock Stage 2</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="input-section">
-          <label>4. Identify the Key Assumption:</label>
-          <select id="selectAssumption"></select>
+        <div id="stage-content-2" class="stage-panel hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 uppercase">Stage 2: Practice Together (WE DO)</span>
+                        <h2 class="text-xl font-extrabold text-slate-900 mt-1">Scenario 2: Toy Car Motion & Distance-Time Graph</h2>
+                    </div>
+                    <span class="text-xs bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full">+40 XP Available</span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 space-y-3">
+                        <div class="bg-slate-50 p-3 rounded-xl border text-xs text-slate-700">
+                            <strong>Experiment:</strong> Measuring time for a toy car to travel measured distances across a wooden classroom floor using manual stopwatches.
+                        </div>
+
+                        <div class="h-52 bg-white p-2 rounded-xl border border-slate-200">
+                            <canvas id="chartStage2"></canvas>
+                        </div>
+
+                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900">
+                            <i class="fa-solid fa-lightbulb text-amber-600 mr-1"></i> <strong>Hint:</strong> Human reaction time usually adds about 0.2 to 0.4 seconds of delay whenever pressing start/stop!
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <h3 class="text-xs font-extrabold uppercase text-slate-500 tracking-wider">Task 1: Classify the Sources of Error</h3>
+                        
+                        <div class="space-y-3 text-xs">
+                            <div class="p-3 bg-slate-50 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <span class="font-bold text-slate-800">A. Human delay when clicking stopwatch start/stop buttons</span>
+                                <select id="s2-q1" class="border border-slate-300 rounded-lg p-1.5 font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="">-- Classify --</option>
+                                    <option value="random">Random Error</option>
+                                    <option value="systematic">Systematic Error</option>
+                                    <option value="limitation">Method Limitation</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <span class="font-bold text-slate-800">B. Tape measure stretched by 2 cm along its entire length</span>
+                                <select id="s2-q2" class="border border-slate-300 rounded-lg p-1.5 font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="">-- Classify --</option>
+                                    <option value="random">Random Error</option>
+                                    <option value="systematic">Systematic Error</option>
+                                    <option value="limitation">Method Limitation</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-slate-50 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <span class="font-bold text-slate-800">C. Uneven friction across floor bumps causing car speed changes</span>
+                                <select id="s2-q3" class="border border-slate-300 rounded-lg p-1.5 font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none">
+                                    <option value="">-- Classify --</option>
+                                    <option value="random">Random Error</option>
+                                    <option value="systematic">Systematic Error</option>
+                                    <option value="limitation">Method Limitation</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="checkStage2()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow flex items-center gap-2">
+                                <i class="fa-solid fa-check-circle"></i> Check Classifications
+                            </button>
+                        </div>
+
+                        <div id="stage2-feedback" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <button class="btn btn-primary" onclick="checkGuidedAnswer()"><i class="fa-solid fa-check"></i> Check Guided Answer</button>
-      </div>
+        <div id="stage-content-3" class="stage-panel hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 uppercase">Stage 3: Independent Challenge (YOU DO)</span>
+                        <h2 class="text-xl font-extrabold text-slate-900 mt-1">Scenario 3: Plant Height vs. Fertilizer Dose</h2>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full">+50 XP Available</span>
+                </div>
 
-      <!-- FREE-TEXT MODE -->
-      <div id="freetextPanel" style="display: none;">
-        <div class="input-section">
-          <label>Write a complete paragraph describing the trend, citing numerical evidence, highlighting key points, and stating an assumption:</label>
-          <textarea id="freeTextAnswer" placeholder="e.g., As the depth increases from 0 to 6,371 km, the density generally increases from 2.8 g/cm³ to 13.0 g/cm³. However, there is a sharp jump at 2,890 km..."></textarea>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 space-y-3">
+                        <div class="bg-slate-50 p-3 rounded-xl border text-xs text-slate-700">
+                            <strong>Setup:</strong> Investigating nitrogen fertilizer amount (0g to 40g) on plant growth over 14 days.
+                        </div>
+
+                        <div class="h-56 bg-white p-2 rounded-xl border border-slate-200">
+                            <canvas id="chartStage3"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 space-y-2">
+                            <h3 class="text-xs font-extrabold uppercase text-purple-900 tracking-wider">Independent Analysis Prompt:</h3>
+                            <p class="text-xs text-purple-950 leading-relaxed">
+                                Examine the graph carefully. Notice the single data point at <strong>30g fertilizer (4 cm height)</strong>. 
+                                Write a response explaining what type of data point this is, what experimental error or uncontrolled variable might have caused it, and why testing only 1 plant per group is a method limitation.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2">
+                            <textarea id="stage3-user-input" rows="5" oninput="liveCheckStage3()" placeholder="Type your response here... Mention words like outlier, sample size, uncontrolled variable, sunlight/water, or repeat trials..." class="w-full border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-purple-500 outline-none shadow-inner"></textarea>
+                            
+                            <!-- Realtime Key Term Checkers -->
+                            <div class="flex flex-wrap gap-2 text-[11px]">
+                                <span id="kw-outlier" class="px-2 py-1 rounded-md bg-slate-100 text-slate-400 font-medium border"><i class="fa-solid fa-xmark mr-1"></i> Outlier / Anomaly</span>
+                                <span id="kw-sample" class="px-2 py-1 rounded-md bg-slate-100 text-slate-400 font-medium border"><i class="fa-solid fa-xmark mr-1"></i> Sample Size / Repeat Trials</span>
+                                <span id="kw-control" class="px-2 py-1 rounded-md bg-slate-100 text-slate-400 font-medium border"><i class="fa-solid fa-xmark mr-1"></i> Uncontrolled Variable (Water/Light)</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <button onclick="checkStage3()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Stage 3 Analysis
+                            </button>
+                        </div>
+
+                        <div id="stage3-feedback" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px;">
-          <i class="fa-solid fa-info-circle"></i> Tip: Make sure to include units and exact numerical values from the graph!
-        </p>
-        <button class="btn btn-primary" onclick="checkFreeTextAnswer()"><i class="fa-solid fa-paper-plane"></i> Submit Answer</button>
-      </div>
 
-      <!-- Feedback Area -->
-      <div id="feedbackBox" class="feedback-box"></div>
+        <div id="stage-content-4" class="stage-panel hidden space-y-6">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between border-b pb-4 mb-4">
+                    <div>
+                        <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 uppercase">Stage 4: Mastery Challenge</span>
+                        <h2 class="text-xl font-extrabold text-slate-900 mt-1">Scenario 4: Salt Dissolving Rate & Improvement Plan</h2>
+                    </div>
+                    <span class="text-xs bg-amber-100 text-amber-800 font-bold px-3 py-1 rounded-full">+60 XP Available</span>
+                </div>
 
-      <!-- Model Answer Box -->
-      <div id="modelAnswerBox" class="model-answer">
-        <h5><i class="fa-solid fa-award"></i> Model Response Breakdown</h5>
-        <p id="modelText" style="font-size: 0.9rem; color: var(--text);"></p>
-      </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-5 space-y-3">
+                        <div class="bg-slate-50 p-3 rounded-xl border text-xs text-slate-700">
+                            <strong>Flawed Method:</strong> Salt was stirred by hand with a spoon in water at different temperatures. Water cooled down during stirring, and stirring speed varied.
+                        </div>
+
+                        <div class="h-56 bg-white p-2 rounded-xl border border-slate-200">
+                            <canvas id="chartStage4"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-7 space-y-4">
+                        <h3 class="text-xs font-extrabold uppercase text-slate-600 tracking-wider">Design an Improved Scientific Method:</h3>
+                        <p class="text-xs text-slate-600">Select the best scientific improvement for each flaw identified in the original method:</p>
+
+                        <div class="space-y-3 text-xs">
+                            <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-1.5">
+                                <span class="font-bold text-amber-950">Flaw 1: Hand stirring speed varied between student trials.</span>
+                                <select id="imp-1" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Choose Improvement --</option>
+                                    <option value="correct">Use an electric magnetic stirrer set to a constant RPM speed.</option>
+                                    <option value="wrong1">Stir faster using a larger wooden spoon.</option>
+                                    <option value="wrong2">Shake the beaker by hand instead of using a spoon.</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-1.5">
+                                <span class="font-bold text-amber-950">Flaw 2: Hot water cooled down rapidly during the 5-minute dissolving test.</span>
+                                <select id="imp-2" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Choose Improvement --</option>
+                                    <option value="wrong1">Add ice cubes to keep the temperature stable.</option>
+                                    <option value="correct">Use a thermostatically controlled water bath or insulated vessel.</option>
+                                    <option value="wrong2">Blow on the water surface continuously.</option>
+                                </select>
+                            </div>
+
+                            <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl space-y-1.5">
+                                <span class="font-bold text-amber-950">Flaw 3: Salt grains were coarse rock salt in trial 1 but fine table salt in trial 2.</span>
+                                <select id="imp-3" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-slate-800 font-medium outline-none focus:ring-2 focus:ring-amber-500">
+                                    <option value="">-- Choose Improvement --</option>
+                                    <option value="wrong1">Use different types of sugar instead of salt.</option>
+                                    <option value="wrong2">Crush all salt randomly without measuring particle size.</option>
+                                    <option value="correct">Control grain size by using the same batch of refined salt across all tests.</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="checkStage4()" class="bg-amber-600 hover:bg-amber-700 text-white font-bold px-5 py-2.5 rounded-xl text-xs transition shadow flex items-center gap-2">
+                                <i class="fa-solid fa-trophy"></i> Submit Mastery Improvement Plan
+                            </button>
+                        </div>
+
+                        <div id="stage4-feedback" class="hidden text-xs p-3 rounded-xl border font-medium"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="summary-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-100 overflow-hidden">
+            <div class="bg-slate-900 text-white p-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-clipboard-list text-amber-400 text-xl"></i>
+                    <h3 class="font-bold text-base">Inquiry Activity Summary Report</h3>
+                </div>
+                <button onclick="closeSummaryModal()" class="text-slate-400 hover:text-white p-1">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-grow space-y-4 custom-scrollbar text-xs">
+                <div class="grid grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border text-center">
+                    <div>
+                        <span class="text-slate-500 block">Total XP Earned</span>
+                        <span id="sum-xp" class="text-xl font-black text-amber-600">0 XP</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Badges Unlocked</span>
+                        <span id="sum-badges" class="text-xl font-black text-indigo-600">0 / 3</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 block">Inquiry Mastery</span>
+                        <span id="sum-mastery" class="text-xl font-black text-emerald-600">0%</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 uppercase mb-1">Student Full Name:</label>
+                    <input type="text" id="student-name" placeholder="Enter student name..." class="w-full border border-slate-300 rounded-lg p-2 text-xs focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+
+                <div class="space-y-3" id="summary-details">
+                    <!-- Dynamic Summary items inserted via JS -->
+                </div>
+            </div>
+
+            <div class="bg-slate-100 p-4 border-t flex items-center justify-between gap-3">
+                <button onclick="copyTeacherReport()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-copy"></i> Copy Summary for Teacher
+                </button>
+                <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Print Report
+                </button>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <!-- Footer Actions -->
-  <div class="summary-footer">
-    <div>
-      <h4>Completed Scenarios: <span id="completedCount">0</span> / <span id="totalScenarios">0</span></h4>
-      <p style="font-size: 0.85rem; color: var(--text-muted);">Master all scenarios to achieve "Graph Analysis Expert" status!</p>
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-medium transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-2">
+        <i class="fa-solid fa-circle-check text-emerald-400"></i> <span id="toast-msg">Copied to clipboard!</span>
     </div>
-    <button class="btn btn-secondary" onclick="copyWorkSummary()"><i class="fa-solid fa-copy"></i> Copy Work Summary for Teacher</button>
-  </div>
-</div>
 
-<script>
-  // Scenario Data Bank (Includes user attached datasets)
-  const scenarios = [
-    {
-      id: "aqi",
-      title: "Air Quality Index (Ozone: 2014–2024)",
-      desc: "Comparing National Average Ozone AQI vs. Hampton Roads regional data.",
-      type: "double-line",
-      labels: ["2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021", "2022", "2023", "2024"],
-      datasets: [
-        {
-          label: "National Average",
-          data: [39.5, 39.5, 39.9, 40.1, 40.0, 39.2, 38.1, 40.0, 39.7, 42.0, 41.4],
-          borderColor: "#2563eb",
-          backgroundColor: "#2563eb",
-          borderDash: []
-        },
-        {
-          label: "Hampton Roads Average",
-          data: [40.2, 40.9, 38.2, 38.8, 37.6, 40.0, 34.0, 36.6, 37.2, 38.7, 37.0],
-          borderColor: "#dc2626",
-          backgroundColor: "#dc2626",
-          borderDash: [5, 5]
+    <script>
+        // State tracking
+        let studentXP = 0;
+        let badgesUnlocked = [false, false, false];
+        let currentStage = 0;
+        let stageProgress = {
+            s0: false,
+            s1: false,
+            s2: false,
+            s3: false,
+            s4: false
+        };
+
+        let chartInstances = {};
+
+        window.onload = function() {
+            initStageCharts();
+            switchStage(0);
+        };
+
+        function addXP(amount) {
+            studentXP += amount;
+            document.getElementById('xp-display').innerText = `${studentXP} XP`;
         }
-      ],
-      yAxisLabel: "Average Ozone AQI",
-      xAxisLabel: "Year",
-      context: "Note: AQI values below 51 represent 'Good' air quality. Look closely at the year 2020 (COVID-19 pandemic lockdowns).",
-      guided: {
-        trends: [
-          { text: "Select trend...", correct: false },
-          { text: "Both averages remained relatively stable around 34–42 AQI, remaining below the threshold of 51 AQI.", correct: true },
-          { text: "Ozone AQI increased rapidly and crossed the dangerous threshold of 55 AQI.", correct: false },
-          { text: "Hampton Roads AQI decreased steadily to 0 over the 10-year period.", correct: false }
-        ],
-        evidence: [
-          { text: "Select evidence...", correct: false },
-          { text: "National AQI moved from 39.5 in 2014 to 41.4 in 2024, while Hampton Roads went from 40.2 to 37.0.", correct: true },
-          { text: "Values stayed constant at exactly 50 AQI every single year.", correct: false },
-          { text: "The graph rose by 100 units between 2014 and 2020.", correct: false }
-        ],
-        highlights: [
-          { text: "Select highlight...", correct: false },
-          { text: "Hampton Roads dropped sharply to its lowest point of 34.0 AQI in 2020 (during COVID lockdowns).", correct: true },
-          { text: "The highest recorded point on the graph was 55 AQI in 2015.", correct: false },
-          { text: "National average dropped to zero in 2020.", correct: false }
-        ],
-        assumptions: [
-          { text: "Select assumption...", correct: false },
-          { text: "Assuming reduced vehicle travel during 2020 lockdowns was the primary reason for lower local emissions.", correct: true },
-          { text: "Assuming ozone gas levels are completely independent of weather conditions and industrial output.", correct: false },
-          { text: "Assuming air quality sensors were turned off during 2020.", correct: false }
-        ]
-      },
-      keywords: ["stable", "34", "40", "2020", "hampton", "national", "covid", "lockdown", "emission"],
-      model: "<span class='tag tag-trend'>TREND:</span> Both National and Hampton Roads ozone AQI remained overall stable between 34 and 42 AQI. <span class='tag tag-evid'>EVIDENCE:</span> National AQI moved from 39.5 in 2014 to 41.4 in 2024, while Hampton Roads went from 40.2 in 2014 to 37.0 in 2024. <span class='tag tag-outlier'>HIGHLIGHT:</span> Hampton Roads experienced a sharp drop to a minimum of 34.0 AQI in 2020. <span class='tag tag-assump'>ASSUMPTION:</span> It is assumed the 2020 drop was driven by reduced traffic/emissions during COVID lockdowns."
-    },
-    {
-      id: "earth-density",
-      title: "Earth Density vs. Depth (PREM Model)",
-      desc: "Analyzing how rock and metal density changes from Earth's surface to the core.",
-      type: "single-line",
-      labels: ["30 (Crust)", "660 (U. Mantle)", "2890 (L. Mantle)", "2890 (O. Core)", "5150 (O. Core)", "5150 (I. Core)", "6371 (Center)"],
-      datasets: [
-        {
-          label: "Density (g/cm³)",
-          data: [2.8, 4.0, 5.6, 9.9, 12.2, 12.8, 13.0],
-          borderColor: "#0d9488",
-          backgroundColor: "#0d9488",
-          borderDash: []
+
+        function unlockBadge(badgeNum) {
+            if (!badgesUnlocked[badgeNum - 1]) {
+                badgesUnlocked[badgeNum - 1] = true;
+                const el = document.getElementById(`badge-${badgeNum}`);
+                el.className = "badge-unlocked text-lg";
+                showToast(`New Badge Unlocked: Level ${badgeNum} Master!`);
+            }
         }
-      ],
-      yAxisLabel: "Density (g/cm³)",
-      xAxisLabel: "Depth from Surface (km)",
-      context: "Data based on the Preliminary Reference Earth Model (PREM). The sudden jump at 2,890 km marks the transition from solid mantle to liquid iron outer core.",
-      guided: {
-        trends: [
-          { text: "Select trend...", correct: false },
-          { text: "Density increases overall as depth from the surface increases towards the center.", correct: true },
-          { text: "Density decreases continuously as depth increases.", correct: false },
-          { text: "Density remains constant at 5.0 g/cm³ across all Earth layers.", correct: false }
-        ],
-        evidence: [
-          { text: "Select evidence...", correct: false },
-          { text: "Density increases from 2.8 g/cm³ at 30 km depth to 13.0 g/cm³ at 6,371 km depth.", correct: true },
-          { text: "Density starts at 13.0 g/cm³ and drops down to 2.8 g/cm³.", correct: false },
-          { text: "Density increases by 100 g/cm³ per 1,000 km.", correct: false }
-        ],
-        highlights: [
-          { text: "Select highlight...", correct: false },
-          { text: "The largest density jump occurs at 2,890 km depth, rising sharply from 5.6 to 9.9 g/cm³.", correct: true },
-          { text: "The biggest jump is between 0 and 30 km depth.", correct: false },
-          { text: "Density stays completely flat between 2,890 km and 5,150 km.", correct: false }
-        ],
-        assumptions: [
-          { text: "Select assumption...", correct: false },
-          { text: "Assuming seismic wave calculations accurately reflect interior density where direct drilling is impossible.", correct: true },
-          { text: "Assuming Earth's core is composed entirely of hollow gas pockets.", correct: false },
-          { text: "Assuming density changes continuously without any distinct compositional boundaries.", correct: false }
-        ]
-      },
-      keywords: ["increase", "depth", "2.8", "13", "2890", "5.6", "9.9", "jump", "core", "mantle", "seismic"],
-      model: "<span class='tag tag-trend'>TREND:</span> Overall, density increases with increasing depth from Earth's surface to its center. <span class='tag tag-evid'>EVIDENCE:</span> Density goes from 2.8 g/cm³ at 30 km to 13.0 g/cm³ at 6,371 km. <span class='tag tag-outlier'>HIGHLIGHT:</span> A major discontinuous jump occurs at 2,890 km depth where density spikes from 5.6 g/cm³ to 9.9 g/cm³ (Mantle to Outer Core boundary). <span class='tag tag-assump'>ASSUMPTION:</span> Assumes seismic wave readings accurately model internal composition since direct sampling below ~12 km is impossible."
-    },
-    {
-      id: "heating-water",
-      title: "Heating Water Over Time",
-      desc: "Measuring water temperature rise under constant Bunsen burner heat.",
-      type: "single-line",
-      labels: ["0 min", "2 min", "4 min", "6 min", "8 min", "10 min"],
-      datasets: [
-        {
-          label: "Temperature (°C)",
-          data: [20, 38, 56, 74, 92, 100],
-          borderColor: "#f59e0b",
-          backgroundColor: "#f59e0b"
+
+        function switchStage(stageNum) {
+            currentStage = stageNum;
+            document.querySelectorAll('.stage-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`stage-content-${stageNum}`).classList.remove('hidden');
+
+            document.querySelectorAll('.stage-tab').forEach((tab, idx) => {
+                if (idx === stageNum) {
+                    tab.classList.add('bg-indigo-600', 'text-white', 'shadow-md');
+                    tab.classList.remove('hover:bg-slate-100', 'text-slate-700');
+                } else {
+                    tab.classList.remove('bg-indigo-600', 'text-white', 'shadow-md');
+                    tab.classList.add('hover:bg-slate-100', 'text-slate-700');
+                }
+            });
         }
-      ],
-      yAxisLabel: "Temperature (°C)",
+
+        // --- DIAGNOSTIC QUIZ LOGIC (Stage 0) ---
+        let diagAnswers = { 1: false, 2: false, 3: false };
+
+        function answerDiagnostic(qNum, choice, isCorrect) {
+            diagAnswers[qNum] = isCorrect;
+            
+            const btnGroup = document.querySelectorAll(`.diag-opt-${qNum}`);
+            btnGroup.forEach(btn => {
+                btn.classList.remove('bg-emerald-100', 'border-emerald-500', 'bg-red-100', 'border-red-500');
+            });
+
+            event.target.classList.add(isCorrect ? 'bg-emerald-100' : 'bg-red-100', isCorrect ? 'border-emerald-500' : 'border-red-500');
+
+            if (diagAnswers[1] && diagAnswers[2] && diagAnswers[3]) {
+                if (!stageProgress.s0) {
+                    stageProgress.s0 = true;
+                    addXP(30);
+                    unlockBadge(1);
+                }
+                const fb = document.getElementById('diag-feedback');
+                fb.classList.remove('hidden');
+                fb.className = "text-xs p-3 rounded-lg font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200";
+                fb.innerHTML = "<i class='fa-solid fa-circle-check mr-1'></i> Excellent! You passed the diagnostic check. Click 'Stage 1: I DO' above to begin!";
+            }
+        }
+
+        // --- STAGE 1 LOGIC ---
+        function highlightSpot(spotId) {
+            showToast(`Highlighted flaw #${spotId} in walkthrough.`);
+        }
+
+        function finishStage1() {
+            if (!stageProgress.s1) {
+                stageProgress.s1 = true;
+                addXP(30);
+            }
+            switchStage(2);
+        }
+
+        // --- STAGE 2 LOGIC ---
+        function checkStage2() {
+            const q1 = document.getElementById('s2-q1').value;
+            const q2 = document.getElementById('s2-q2').value;
+            const q3 = document.getElementById('s2-q3').value;
+
+            const fb = document.getElementById('stage2-feedback');
+            fb.classList.remove('hidden');
+
+            if (q1 === 'random' && q2 === 'systematic' && q3 === 'limitation') {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-emerald-50 text-emerald-800 border-emerald-200";
+                fb.innerHTML = "<i class='fa-solid fa-circle-check mr-1'></i> Perfect! Stopwatch reaction delay is Random, stretched tape scale is Systematic, and floor friction is a Method Limitation.";
+                
+                if (!stageProgress.s2) {
+                    stageProgress.s2 = true;
+                    addXP(40);
+                    unlockBadge(2);
+                }
+            } else {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-amber-50 text-amber-800 border-amber-200";
+                fb.innerHTML = "<i class='fa-solid fa-circle-exclamation mr-1'></i> Almost there! Remember: Human reaction speed varies randomly, tape stretching shifts all readings higher systematically, and floor surface condition is an uncontrolled limitation.";
+            }
+        }
+
+        // --- STAGE 3 REALTIME ANALYSIS LOGIC ---
+        function liveCheckStage3() {
+            const val = document.getElementById('stage3-user-input').value.toLowerCase();
+
+            const hasOutlier = val.includes('outlier') || val.includes('anomaly') || val.includes('drop') || val.includes('30g');
+            const hasSample = val.includes('sample') || val.includes('repeat') || val.includes('trial') || val.includes('one plant') || val.includes('single plant');
+            const hasControl = val.includes('water') || val.includes('light') || val.includes('sun') || val.includes('soil') || val.includes('uncontrolled') || val.includes('variable');
+
+            updateKwPill('kw-outlier', hasOutlier, 'Outlier / Anomaly');
+            updateKwPill('kw-sample', hasSample, 'Sample Size / Repeat Trials');
+            updateKwPill('kw-control', hasControl, 'Uncontrolled Variable');
+        }
+
+        function updateKwPill(id, active, label) {
+            const el = document.getElementById(id);
+            if (active) {
+                el.className = "px-2 py-1 rounded-md bg-purple-100 text-purple-800 font-bold border border-purple-300";
+                el.innerHTML = `<i class="fa-solid fa-check mr-1 text-purple-600"></i> ${label}`;
+            } else {
+                el.className = "px-2 py-1 rounded-md bg-slate-100 text-slate-400 font-medium border";
+                el.innerHTML = `<i class="fa-solid fa-xmark mr-1"></i> ${label}`;
+            }
+        }
+
+        function checkStage3() {
+            const val = document.getElementById('stage3-user-input').value.toLowerCase();
+            const fb = document.getElementById('stage3-feedback');
+            fb.classList.remove('hidden');
+
+            const hasOutlier = val.includes('outlier') || val.includes('anomaly') || val.includes('drop');
+            const hasSample = val.includes('sample') || val.includes('repeat') || val.includes('trial') || val.includes('plant');
+
+            if (hasOutlier && hasSample) {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-emerald-50 text-emerald-800 border-emerald-200";
+                fb.innerHTML = "<i class='fa-solid fa-circle-check mr-1'></i> Great scientific reasoning! You correctly identified the anomaly and explained why a small sample size compromises validity.";
+                if (!stageProgress.s3) {
+                    stageProgress.s3 = true;
+                    addXP(50);
+                }
+            } else {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-amber-50 text-amber-800 border-amber-200";
+                fb.innerHTML = "<i class='fa-solid fa-lightbulb mr-1'></i> Tip: Make sure your answer explicitly mentions 'outlier' (for the 30g point) and 'sample size' or 'repeat trials'.";
+            }
+        }
+
+        // --- STAGE 4 MASTERY LOGIC ---
+        function checkStage4() {
+            const i1 = document.getElementById('imp-1').value;
+            const i2 = document.getElementById('imp-2').value;
+            const i3 = document.getElementById('imp-3').value;
+
+            const fb = document.getElementById('stage4-feedback');
+            fb.classList.remove('hidden');
+
+            if (i1 === 'correct' && i2 === 'correct' && i3 === 'correct') {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-emerald-50 text-emerald-800 border-emerald-200";
+                fb.innerHTML = "<i class='fa-solid fa-award mr-1'></i> Perfect Method Improvement Plan! You selected all 3 best-practice scientific controls!";
+                
+                if (!stageProgress.s4) {
+                    stageProgress.s4 = true;
+                    addXP(60);
+                    unlockBadge(3);
+                }
+            } else {
+                fb.className = "text-xs p-3 rounded-xl border font-medium bg-amber-50 text-amber-800 border-amber-200";
+                fb.innerHTML = "<i class='fa-solid fa-triangle-exclamation mr-1'></i> Some choices could be improved. Re-examine the options: choose automated stirring, controlled water temperature, and consistent particle sizes.";
+            }
+        }
+
+        // --- CHARTS INITIALIZATION ---
+        function initStageCharts() {
+            // Stage 1 Chart
+            new Chart(document.getElementById('chartStage1').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [0, 2, 4, 6, 8, 10],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        data: [20, 42, 65, 88, 100, 100],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: true,
+                        tension: 0.2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Stage 2 Chart
+            new Chart(document.getElementById('chartStage2').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [0, 2, 4, 6, 8, 10, 12],
+                    datasets: [{
+                        label: 'Distance (m)',
+                        data: [0, 3.8, 8.1, 12.0, 12.1, 12.2, 18.0],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Stage 3 Chart
+            new Chart(document.getElementById('chartStage3').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [0, 10, 20, 30, 40],
+                    datasets: [{
+                        label: 'Growth (cm)',
+                        data: [3, 14, 21, 4, 10],
+                        borderColor: '#a855f7',
+                        pointBackgroundColor: ['#a855f7', '#a855f7', '#a855f7', '#ef4444', '#a855f7'],
+                        pointRadius: [5, 5, 5, 9, 5],
+                        fill: false
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Stage 4 Chart
+            new Chart(document.getElementById('chartStage4').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: [10, 20, 30, 40, 50, 60],
+                    datasets: [{
+                        label: 'Dissolving Speed (g/min)',
+                        data: [2, 4, 7, 12, 19, 28],
+                        borderColor: '#f59e0b',
+                        fill: false
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // --- SUMMARY MODAL & REPORT ---
+        function showSummaryModal() {
+            document.getElementById('sum-xp').innerText = `${studentXP} XP`;
+            const badgeCount = badgesUnlocked.filter(b => b).length;
+            document.getElementById('sum-badges').innerText = `${badgeCount} / 3`;
+            
+            const completedStages = Object.values(stageProgress).filter(s => s).length;
+            const masteryPct = Math.round((completedStages / 5) * 100);
+            document.getElementById('sum-mastery').innerText = `${masteryPct}%`;
+
+            const det = document.getElementById('summary-details');
+            det.innerHTML = `
+                <div class="p-2.5 bg-slate-50 rounded-lg border">
+                    <span class="font-bold text-slate-800">Stage 0 Diagnostic:</span> ${stageProgress.s0 ? 'Passed (+30 XP)' : 'Incomplete'}
+                </div>
+                <div class="p-2.5 bg-slate-50 rounded-lg border">
+                    <span class="font-bold text-slate-800">Stage 1 Walkthrough:</span> ${stageProgress.s1 ? 'Completed (+30 XP)' : 'Incomplete'}
+                </div>
+                <div class="p-2.5 bg-slate-50 rounded-lg border">
+                    <span class="font-bold text-slate-800">Stage 2 Error Classification:</span> ${stageProgress.s2 ? 'Mastered (+40 XP)' : 'Incomplete'}
+                </div>
+                <div class="p-2.5 bg-slate-50 rounded-lg border">
+                    <span class="font-bold text-slate-800">Stage 3 Written Analysis:</span> ${stageProgress.s3 ? 'Submitted (+50 XP)' : 'Incomplete'}
+                    <p class="text-[11px] text-slate-600 italic mt-1">"${document.getElementById('stage3-user-input').value || 'No text written.'}"</p>
+                </div>
+                <div class="p-2.5 bg-slate-50 rounded-lg border">
+                    <span class="font-bold text-slate-800">Stage 4 Improvement Plan:</span> ${stageProgress.s4 ? 'Mastered (+60 XP)' : 'Incomplete'}
+                </div>
+            `;
+
+            document.getElementById('summary-modal').classList.remove('hidden');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summary-modal').classList.add('hidden');
+        }
+
+        function copyTeacherReport() {
+            const name = document.getElementById('student-name').value.trim() || "Anonymous Student";
+            let report = `=== SCIENCE INQUIRY: ERRORS & LIMITATIONS REPORT ===\n`;
+            report += `Student Name: ${name}\n`;
+            report += `Total Score: ${studentXP} XP | Mastery: ${Math.round((Object.values(stageProgress).filter(s => s).length / 5) * 100)}%\n\n`;
+            report += `Stage 0 (Diagnostic): ${stageProgress.s0 ? 'PASSED' : 'INCOMPLETE'}\n`;
+            report += `Stage 1 (Walkthrough): ${stageProgress.s1 ? 'PASSED' : 'INCOMPLETE'}\n`;
+            report += `Stage 2 (Classification): ${stageProgress.s2 ? 'PASSED' : 'INCOMPLETE'}\n`;
+            report += `Stage 3 Response: ${document.getElementById('stage3-user-input').value || 'N/A'}\n`;
+            report += `Stage 4 (Improvement Plan): ${stageProgress.s4 ? 'PASSED' : 'INCOMPLETE'}\n`;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(report);
+            } else {
+                const ta = document.createElement('textarea');
+                ta.value = report;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+            }
+
+            showToast("Teacher summary copied to clipboard!");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
