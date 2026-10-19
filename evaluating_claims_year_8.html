@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Year 8 Science: Evaluating Claims & Scientific Arguments</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --secondary: #0891b2;
+      --accent: #d97706;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      background: linear-gradient(135deg, #312e81, #4f46e5);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-text h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
+    .header-text p { font-size: 0.95rem; opacity: 0.9; }
+
+    .score-badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 12px 20px;
+      border-radius: 50px;
+      text-align: center;
+    }
+    .score-badge .pts { font-size: 1.5rem; font-weight: 800; color: #fde047; }
+    .score-badge .lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Concept Framework Box */
+    .concept-box {
+      background-color: #f0fdf4;
+      border-left: 4px solid var(--success);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 24px;
+    }
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .concept-card {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .concept-card h4 { font-size: 0.85rem; color: #166534; margin-bottom: 4px; }
+    .concept-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Nav Tabs */
+    .scenario-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .nav-btn {
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #f1f5f9; color: var(--text); }
+    .nav-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(79,70,229,0.2);
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .claim-box {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+    .claim-box h4 { font-size: 0.85rem; text-transform: uppercase; color: #92400e; margin-bottom: 4px; }
+    .claim-box p { font-size: 1rem; font-weight: 600; color: #78350f; }
+
+    .chart-container { position: relative; height: 300px; width: 100%; margin-bottom: 12px; }
+
+    /* Input Controls */
+    .mode-toggle {
+      display: flex;
+      background: #f1f5f9;
+      padding: 4px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .mode-btn {
+      flex: 1;
+      padding: 8px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 6px;
+      color: var(--text-muted);
+    }
+    .mode-btn.active { background: white; color: var(--primary); box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
+    .input-group label span { font-weight: 400; color: var(--text-muted); font-size: 0.78rem; }
+
+    select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    select:focus, textarea:focus { border-color: var(--primary); }
+    textarea { height: 70px; resize: vertical; }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    /* Feedback & Breakdown */
+    .feedback-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .feedback-box.correct { background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; }
+    .feedback-box.partial { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+    .feedback-box.incorrect { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+
+    .model-answer {
+      margin-top: 16px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      display: none;
+    }
+    .model-answer h5 { color: var(--primary-dark); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; }
+
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; }
+    .tag-claim { background: #fef3c7; color: #92400e; }
+    .tag-evid { background: #d1fae5; color: #065f46; }
+    .tag-reason { background: #dbeafe; color: #1e40af; }
+    .tag-extent { background: #f3e8ff; color: #6b21a8; }
+
+    .summary-footer {
+      margin-top: 24px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .badge-guided { background: #e0e7ff; color: #3730a3; }
+    .badge-mastery { background: #fef3c7; color: #92400e; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-text">
+      <h1><i class="fa-solid fa-scale-balanced"></i> Scientific Claim Evaluator</h1>
+      <p>Year 8 Science • Evaluating Claims, Analyzing Evidence, Explaining Reasoning & Assessing Extent</p>
+    </div>
+    <div class="score-badge">
+      <div class="pts" id="totalScore">0</div>
+      <div class="lbl">Total XP</div>
+    </div>
+  </header>
+
+  <!-- Framework Guide -->
+  <div class="concept-box">
+    <strong style="color: #166534;"><i class="fa-solid fa-graduation-cap"></i> The 4-Step Claim Evaluation Framework:</strong>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <h4><span class="tag tag-claim">1. CLAIM</span> Re-state Claim</h4>
+        <p>State what statement is being tested in your own clear words.</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-evid">2. EVIDENCE</span> Data & Numbers</h4>
+        <p>Quote specific values and units from the graph that support or challenge it.</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-reason">3. REASONING</span> Connect the Dots</h4>
+        <p>Explain <em>HOW</em> and <em>WHY</em> the data supports or refutes the claim.</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-extent">4. EXTENT</span> Final Verdict</h4>
+        <p>Is the claim <strong>Fully Supported</strong>, <strong>Partly Supported</strong>, or <strong>Refuted</strong>?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="scenario-nav" id="scenarioNav"></div>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Left Panel: Data & Claim -->
+    <div class="card">
+      <h3 id="scenarioTitle" style="margin-bottom: 4px;">Scenario Title</h3>
+      <p id="scenarioDesc" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Scenario Description</p>
+      
+      <div class="claim-box">
+        <h4><i class="fa-solid fa-bullhorn"></i> Claim Being Evaluated:</h4>
+        <p id="scenarioClaim">"Claim text goes here..."</p>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="mainChart"></canvas>
+      </div>
+
+      <div id="scenarioContext" style="font-size: 0.85rem; background: #f1f5f9; padding: 10px; border-radius: 6px;">
+        <!-- Contextual info -->
+      </div>
+    </div>
+
+    <!-- Right Panel: Student Construction -->
+    <div class="card">
+      <div class="mode-toggle" id="modeToggleContainer">
+        <button class="mode-btn active" id="btnGuidedMode" onclick="setMode('guided')"><i class="fa-solid fa-list-check"></i> Guided Argument Builder</button>
+        <button class="mode-btn" id="btnFreetextMode" onclick="setMode('freetext')"><i class="fa-solid fa-pen-to-square"></i> Free-Text Evaluator</button>
+      </div>
+
+      <!-- MASTERY ALERT BANNER FOR SCENARIOS 3 & 4 -->
+      <div id="masteryBanner" style="display: none; background: #fff7ed; border: 1px solid #ffedd5; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem; color: #9a3412;">
+        <i class="fa-solid fa-lock"></i> <strong>Independent Practice:</strong> Scenarios 3 & 4 are Free-Text only. Apply all 4 framework steps in your paragraph below!
+      </div>
+
+      <!-- GUIDED MODE -->
+      <div id="guidedPanel">
+        <div class="input-group">
+          <label>1. Re-state the Claim in your own words:</label>
+          <select id="selectClaim"></select>
+        </div>
+
+        <div class="input-group">
+          <label>2. Select Data Evidence (Specific Numbers + Units):</label>
+          <select id="selectEvidence"></select>
+        </div>
+
+        <div class="input-group">
+          <label>3. Scientific Reasoning (HOW evidence connects to claim):</label>
+          <select id="selectReasoning"></select>
+        </div>
+
+        <div class="input-group">
+          <label>4. To what EXTENT is this claim supported?</label>
+          <select id="selectExtent"></select>
+        </div>
+
+        <button class="btn btn-primary" onclick="checkGuidedAnswer()"><i class="fa-solid fa-circle-check"></i> Evaluate Argument</button>
+      </div>
+
+      <!-- FREE-TEXT MODE -->
+      <div id="freetextPanel" style="display: none;">
+        <div class="input-group">
+          <label>Write your complete argument below: <span>(Include claim summary, numerical evidence with units, scientific reasoning, and extent statement)</span></label>
+          <textarea id="freeTextAnswer" style="height: 180px;" placeholder="Write your paragraph addressing Claim, Evidence (with figures/units), Reasoning, and Extent..."></textarea>
+        </div>
+        <button class="btn btn-primary" onclick="checkFreeTextAnswer()"><i class="fa-solid fa-paper-plane"></i> Submit Evaluation</button>
+      </div>
+
+      <!-- Feedback -->
+      <div id="feedbackBox" class="feedback-box"></div>
+
+      <!-- Model Answer -->
+      <div id="modelAnswerBox" class="model-answer">
+        <h5><i class="fa-solid fa-award"></i> Exemplar Argument Breakdown</h5>
+        <p id="modelText" style="font-size: 0.88rem; color: var(--text);"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Footer -->
+  <div class="summary-footer">
+    <div>
+      <h4>Evaluations Completed: <span id="completedCount">0</span> / <span id="totalScenarios">0</span></h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Master all claim evaluations to earn the "Scientific Critic" badge!</p>
+    </div>
+    <button class="btn btn-secondary" onclick="copyWorkSummary()"><i class="fa-solid fa-copy"></i> Copy Work Summary for Teacher</button>
+  </div>
+</div>
+
+<script>
+  const scenarios = [
+    {
+      id: "claim-heart-rate",
+      title: "1. Heart Rate Recovery",
+      level: "guided",
+      desc: "Measuring pulse recovery over 6 minutes following intense star jumps.",
+      claim: "A student's heart rate fully returns to its resting state (70 bpm) within 2 minutes of stopping exercise.",
+      type: "single-line",
+      labels: ["0 min (Peak)", "1 min", "2 min", "3 min", "4 min", "5 min", "6 min"],
+      datasets: [
+        { label: "Heart Rate (bpm)", data: [150, 130, 110, 95, 82, 74, 70], borderColor: "#dc2626", backgroundColor: "#dc2626" }
+      ],
+      yAxisLabel: "Heart Rate (bpm)",
+      xAxisLabel: "Recovery Time (minutes)",
+      context: "Resting heart rate measured before exercise was 70 bpm. Peak rate immediately after exercise was 150 bpm.",
+      guided: {
+        claims: [
+          { text: "Select re-stated claim...", correct: false },
+          { text: "The claim states that heart rate drops back down to resting level (70 bpm) inside 2 minutes.", correct: true },
+          { text: "The claim states that heart rate continues to rise after stopping exercise.", correct: false }
+        ],
+        evidence: [
+          { text: "Select evidence...", correct: false },
+          { text: "At 2 minutes post-exercise, heart rate was 110 bpm. It took 6 minutes to drop to resting rate (70 bpm).", correct: true },
+          { text: "At 2 minutes, heart rate was at 70 bpm, and reached 150 bpm at 6 minutes.", correct: false }
+        ],
+        reasoning: [
+          { text: "Select reasoning...", correct: false },
+          { text: "Because 110 bpm is still 40 bpm above resting level (70 bpm), recovery takes three times longer than claimed.", correct: true },
+          { text: "Because 110 bpm is lower than 150 bpm, the heart has completely recovered.", correct: false }
+        ],
+        extents: [
+          { text: "Select extent...", correct: false },
+          { text: "REFUTED - The data clearly shows recovery took 6 minutes, not 2 minutes.", correct: true },
+          { text: "FULLY SUPPORTED - Heart rate dropped to 70 bpm in 2 minutes.", correct: false }
+        ]
+      },
+      keywords: ["70", "110", "150", "6 minutes", "2 minutes", "refuted", "longer", "resting", "bpm"],
+      model: "<span class='tag tag-claim'>CLAIM:</span> The claim states that heart rate returns to its resting rate of 70 bpm within 2 minutes of stopping exercise. <span class='tag tag-evid'>EVIDENCE:</span> At 2 minutes, heart rate was 110 bpm; it took 6 minutes to reach resting level (70 bpm). <span class='tag tag-reason'>REASONING:</span> 110 bpm is significantly higher than resting level (70 bpm), showing muscles still required elevated oxygen delivery. <span class='tag tag-extent'>EXTENT:</span> <strong>REFUTED</strong> — Recovery required 6 minutes, disproving the 2-minute claim."
+    },
+    {
+      id: "claim-dissolving",
+      title: "2. Dissolving Sugar vs. Temp",
+      level: "guided",
+      desc: "Investigating how water temperature affects the time taken for a sugar cube to dissolve.",
+      claim: "Doubling the water temperature cuts dissolving time exactly in half.",
+      type: "single-line",
+      labels: ["20°C", "30°C", "40°C", "50°C", "60°C"],
+      datasets: [
+        { label: "Dissolving Time (sec)", data: [120, 85, 60, 48, 38], borderColor: "#0891b2", backgroundColor: "#0891b2" }
+      ],
+      yAxisLabel: "Time to Dissolve (seconds)",
+      xAxisLabel: "Water Temperature (°C)",
+      context: "Tested using 200 mL of water stirred at a constant speed with standard 4g sugar cubes.",
+      guided: {
+        claims: [
+          { text: "Select re-stated claim...", correct: false },
+          { text: "The claim states that if water temperature doubles, dissolving time decreases by exactly 50%.", correct: true },
+          { text: "The claim states that warmer water slows down dissolving time.", correct: false }
+        ],
+        evidence: [
+          { text: "Select evidence...", correct: false },
+          { text: "When temperature doubled from 20°C to 40°C, time halved from 120s to 60s. However, when doubling from 30°C to 60°C, time dropped from 85s to 38s (more than half).", correct: true },
+          { text: "Dissolving time stayed at 120 seconds regardless of temperature.", correct: false }
+        ],
+        reasoning: [
+          { text: "Select reasoning...", correct: false },
+          { text: "Higher kinetic energy speeds up dissolving, but the mathematical pattern is non-linear and doesn't hold strictly true at higher temps.", correct: true },
+          { text: "Water turns into steam so sugar cannot dissolve past 40°C.", correct: false }
+        ],
+        extents: [
+          { text: "Select extent...", correct: false },
+          { text: "PARTLY SUPPORTED - The claim holds true for 20°C to 40°C (120s to 60s), but fails for 30°C to 60°C (85s to 38s).", correct: true },
+          { text: "FULLY SUPPORTED - Temperature always perfectly cuts time in half across all points.", correct: false }
+        ]
+      },
+      keywords: ["partly", "supported", "20", "40", "120", "60", "30", "85", "38", "halved"],
+      model: "<span class='tag tag-claim'>CLAIM:</span> The claim states that doubling water temperature reduces sugar dissolving time by exactly half. <span class='tag tag-evid'>EVIDENCE:</span> From 20°C to 40°C, time drops from 120s to 60s (exactly half). But from 30°C to 60°C, time drops from 85s to 38s (more than half). <span class='tag tag-reason'>REASONING:</span> Heat increases kinetic energy, but the relationship is non-linear rather than a strict simple halving rule. <span class='tag tag-extent'>EXTENT:</span> <strong>PARTLY SUPPORTED</strong> — True for low temp ranges, but inaccurate across higher temp ranges."
+    },
+    {
+      id: "claim-ramp-height",
+      title: "3. Ramp Height vs. Distance",
+      level: "freetext-only",
+      desc: "Measuring distance a toy car travels across a wooden floor when released from different ramp heights.",
+      claim: "Doubling the ramp height doubles the distance the toy car travels.",
+      type: "single-line",
+      labels: ["10 cm", "20 cm", "30 cm", "40 cm", "50 cm"],
+      datasets: [
+        { label: "Distance Traveled (cm)", data: [45, 90, 135, 180, 225], borderColor: "#16a34a", backgroundColor: "#16a34a" }
+      ],
+      yAxisLabel: "Distance Traveled (cm)",
+      xAxisLabel: "Ramp Height (cm)",
+      context: "Car released from rest without pushing. Floor surface kept identical for all trials.",
+      guided: null,
+      keywords: ["fully", "supported", "doubles", "10", "20", "45", "90", "proportional", "40", "180"],
+      model: "<span class='tag tag-claim'>CLAIM:</span> The claim asserts that doubling ramp height doubles the distance a toy car rolls. <span class='tag tag-evid'>EVIDENCE:</span> At 10 cm height = 45 cm distance; doubling to 20 cm height = 90 cm distance. Doubling again to 40 cm = 180 cm distance. <span class='tag tag-reason'>REASONING:</span> Gravitational potential energy increases linearly with height, yielding a directly proportional increase in travel distance. <span class='tag tag-extent'>EXTENT:</span> <strong>FULLY SUPPORTED</strong> — The data strictly matches the claimed proportional rule."
+    },
+    {
+      id: "claim-photosynthesis",
+      title: "4. Light vs. Photosynthesis",
+      level: "freetext-only",
+      desc: "Measuring oxygen gas bubble production rate in pondweed placed at various distances from a lamp.",
+      claim: "Increasing light intensity continuously and infinitely increases the rate of photosynthesis.",
+      type: "single-line",
+      labels: ["10 W", "20 W", "30 W", "40 W", "50 W", "60 W"],
+      datasets: [
+        { label: "Oxygen Bubbles / min", data: [12, 25, 38, 50, 51, 50], borderColor: "#4f46e5", backgroundColor: "#4f46e5" }
+      ],
+      yAxisLabel: "Oxygen Bubbles per minute",
+      xAxisLabel: "Light Lamp Wattage (W)",
+      context: "Water temperature and carbon dioxide levels were kept constant in the beaker throughout the test.",
+      guided: null,
+      keywords: ["partly", "supported", "plateau", "level", "50", "51", "40", "limiting", "constant"],
+      model: "<span class='tag tag-claim'>CLAIM:</span> The claim states that higher light intensity will infinitely increase the rate of photosynthesis. <span class='tag tag-evid'>EVIDENCE:</span> Bubble rate increases from 12 bubbles/min at 10 W to 50 bubbles/min at 40 W, but then plateaus at 51 and 50 bubbles/min at 50 W and 60 W. <span class='tag tag-reason'>REASONING:</span> Light increases photosynthesis up to 40 W, but beyond that, another factor (like CO2 or enzyme availability) becomes the limiting factor. <span class='tag tag-extent'>EXTENT:</span> <strong>PARTLY SUPPORTED</strong> — True at low light levels, but false at high light levels where the rate levels off."
+    }
+  ];
+
+  let currentScenarioIdx = 0;
+  let activeMode = "guided";
+  let chartInstance = null;
+  let scores = {};
+
+  const scenarioNavEl = document.getElementById("scenarioNav");
+  const scenarioTitleEl = document.getElementById("scenarioTitle");
+  const scenarioDescEl = document.getElementById("scenarioDesc");
+  const scenarioClaimEl = document.getElementById("scenarioClaim");
+  const scenarioContextEl = document.getElementById("scenarioContext");
+  const totalScoreEl = document.getElementById("totalScore");
+  const completedCountEl = document.getElementById("completedCount");
+  const totalScenariosEl = document.getElementById("totalScenarios");
+
+  const selectClaimEl = document.getElementById("selectClaim");
+  const selectEvidenceEl = document.getElementById("selectEvidence");
+  const selectReasoningEl = document.getElementById("selectReasoning");
+  const selectExtentEl = document.getElementById("selectExtent");
+
+  const modeToggleContainerEl = document.getElementById("modeToggleContainer");
+  const masteryBannerEl = document.getElementById("masteryBanner");
+  const btnGuidedModeEl = document.getElementById("btnGuidedMode");
+  const btnFreetextModeEl = document.getElementById("btnFreetextMode");
+
+  const feedbackBoxEl = document.getElementById("feedbackBox");
+  const modelAnswerBoxEl = document.getElementById("modelAnswerBox");
+  const modelTextEl = document.getElementById("modelText");
+
+  function initApp() {
+    totalScenariosEl.textContent = scenarios.length;
+    renderNav();
+    loadScenario(0);
+  }
+
+  function renderNav() {
+    scenarioNavEl.innerHTML = "";
+    scenarios.forEach((s, idx) => {
+      const btn = document.createElement("button");
+      btn.className = `nav-btn ${idx === currentScenarioIdx ? "active" : ""}`;
+      
+      const badgeClass = s.level === "guided" ? "badge-guided" : "badge-mastery";
+      const badgeText = s.level === "guided" ? "Guided" : "Mastery";
+
+      btn.innerHTML = `<i class="fa-solid ${scores[s.id] ? 'fa-circle-check' : 'fa-scale-balanced'}"></i> ${s.title} <span class="level-badge ${badgeClass}">${badgeText}</span>`;
+      btn.onclick = () => loadScenario(idx);
+      scenarioNavEl.appendChild(btn);
+    });
+  }
+
+  function loadScenario(idx) {
+    currentScenarioIdx = idx;
+    const sc = scenarios[idx];
+
+    feedbackBoxEl.style.display = "none";
+    modelAnswerBoxEl.style.display = "none";
+    document.getElementById("freeTextAnswer").value = "";
+
+    renderNav();
+
+    scenarioTitleEl.textContent = sc.title;
+    scenarioDescEl.textContent = sc.desc;
+    scenarioClaimEl.textContent = sc.claim;
+    scenarioContextEl.innerHTML = `<i class="fa-solid fa-circle-info"></i> <strong>Context Note:</strong> ${sc.context}`;
+
+    if (sc.level === "freetext-only") {
+      modeToggleContainerEl.style.display = "none";
+      masteryBannerEl.style.display = "block";
+      setMode('freetext');
+    } else {
+      modeToggleContainerEl.style.display = "flex";
+      masteryBannerEl.style.display = "none";
+      populateDropdown(selectClaimEl, sc.guided.claims);
+      populateDropdown(selectEvidenceEl, sc.guided.evidence);
+      populateDropdown(selectReasoningEl, sc.guided.reasoning);
+      populateDropdown(selectExtentEl, sc.guided.extents);
+      setMode('guided');
+    }
+
+    renderChart(sc);
+  }
+
+  function populateDropdown(selectEl, options) {
+    selectEl.innerHTML = "";
+    if (!options) return;
+    options.forEach((opt, i) => {
+      const o = document.createElement("option");
+      o.value = i;
+      o.textContent = opt.text;
+      selectEl.appendChild(o);
+    });
+  }
+
+  function renderChart(sc) {
+    const ctx = document.getElementById("mainChart").getContext("2d");
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sc.labels,
+        datasets: sc.datasets.map(ds => ({
+          ...ds,
+          borderWidth: 2,
+          pointRadius: 5,
+          tension: 0.1
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: sc.xAxisLabel } },
+          y: { title: { display: true, text: sc.yAxisLabel } }
+        }
+      }
+    });
+  }
+
+  function setMode(mode) {
+    activeMode = mode;
+    btnGuidedModeEl.classList.remove("active");
+    btnFreetextModeEl.classList.remove("active");
+
+    if (mode === "guided") {
+      btnGuidedModeEl.classList.add("active");
+      document.getElementById("guidedPanel").style.display = "block";
+      document.getElementById("freetextPanel").style.display = "none";
+    } else {
+      btnFreetextModeEl.classList.add("active");
+      document.getElementById("guidedPanel").style.display = "none";
+      document.getElementById("freetextPanel").style.display = "block";
+    }
+  }
+
+  function checkGuidedAnswer() {
+    const sc = scenarios[currentScenarioIdx];
+    const cIdx = parseInt(selectClaimEl.value);
+    const eIdx = parseInt(selectEvidenceEl.value);
+    const rIdx = parseInt(selectReasoningEl.value);
+    const xIdx = parseInt(selectExtentEl.value);
+
+    if (cIdx === 0 || eIdx === 0 || rIdx === 0 || xIdx === 0) {
+      showFeedback("partial", "<i class='fa-solid fa-triangle-exclamation'></i> Select an option for all 4 argument components!");
+      return;
+    }
+
+    if (sc.guided.claims[cIdx].correct && sc.guided.evidence[eIdx].correct && 
+        sc.guided.reasoning[rIdx].correct && sc.guided.extents[xIdx].correct) {
+      scores[sc.id] = 100;
+      updateScoreUI();
+      showFeedback("correct", "<i class='fa-solid fa-circle-check'></i> <strong>Outstanding Evaluation!</strong> You constructed a complete, evidence-based scientific argument (+100 XP).");
+      showModelAnswer();
+    } else {
+      showFeedback("incorrect", "<i class='fa-solid fa-circle-xmark'></i> <strong>Check your logic!</strong> Ensure your numerical evidence supports your scientific reasoning and final extent verdict.");
+    }
+  }
+
+  function checkFreeTextAnswer() {
+    const sc = scenarios[currentScenarioIdx];
+    const text = document.getElementById("freeTextAnswer").value.toLowerCase();
+
+    if (text.trim().length < 40) {
+      showFeedback("partial", "<i class='fa-solid fa-triangle-exclamation'></i> Your response is too brief. Be sure to address claim, figures with units, reasoning, and your extent verdict.");
+      return;
+    }
+
+    let hits = 0;
+    sc.keywords.forEach(kw => { if (text.includes(kw)) hits++; });
+
+    if (hits / sc.keywords.length >= 0.35) {
+      scores[sc.id] = 100;
+      updateScoreUI();
+      showFeedback("correct", "<i class='fa-solid fa-circle-check'></i> <strong>Great Scientific Argument!</strong> You correctly cited data and reached a justified conclusion (+100 XP).");
+      showModelAnswer();
+    } else {
+      showFeedback("partial", "<i class='fa-solid fa-circle-exclamation'></i> <strong>Almost there!</strong> Make sure to state exact graph values with units and explicitly state if the claim is fully supported, partly supported, or refuted.");
+    }
+  }
+
+  function showFeedback(type, message) {
+    feedbackBoxEl.className = `feedback-box ${type}`;
+    feedbackBoxEl.innerHTML = message;
+    feedbackBoxEl.style.display = "block";
+  }
+
+  function showModelAnswer() {
+    modelTextEl.innerHTML = scenarios[currentScenarioIdx].model;
+    modelAnswerBoxEl.style.display = "block";
+  }
+
+  function updateScoreUI() {
+    const completed = Object.keys(scores).length;
+    totalScoreEl.textContent = completed * 100;
+    completedCountEl.textContent = completed;
+    renderNav();
+  }
+
+  function copyWorkSummary() {
+    const completed = Object.keys(scores).length;
+    let summaryText = `Year 8 Science - Claim Evaluation Summary\nCompleted: ${completed}/${scenarios.length}\nTotal XP: ${completed * 100}\n\nStatus:\n`;
+    scenarios.forEach(sc => {
+      summaryText += `- ${sc.title}: ${scores[sc.id] ? "COMPLETED (100 XP)" : "Pending"}\n`;
+    });
+
+    navigator.clipboard.writeText(summaryText).then(() => {
+      alert("Work summary copied to clipboard! You can paste this into your document or email to your teacher.");
+    });
+  }
+
+  window.onload = initApp;
+</script>
+</body>
+</html>
