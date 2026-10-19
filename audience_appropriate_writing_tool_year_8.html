@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Year 8 Science: Audience-Appropriate Scientific Writing</title>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --secondary: #0d9488;
+      --accent: #d97706;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); line-height: 1.5; padding: 20px; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      background: linear-gradient(135deg, #0f172a, #2563eb);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .header-text h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 6px; }
+    .header-text p { font-size: 0.95rem; opacity: 0.9; }
+
+    .score-badge {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 12px 20px;
+      border-radius: 50px;
+      text-align: center;
+    }
+    .score-badge .pts { font-size: 1.5rem; font-weight: 800; color: #fde047; }
+    .score-badge .lbl { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Concept Framework Box */
+    .concept-box {
+      background-color: #f0f9ff;
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 24px;
+    }
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .concept-card {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+    }
+    .concept-card h4 { font-size: 0.85rem; color: var(--primary-dark); margin-bottom: 4px; }
+    .concept-card p { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* Nav Tabs */
+    .scenario-nav {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+    .nav-btn {
+      padding: 10px 18px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { background: #f1f5f9; color: var(--text); }
+    .nav-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+      box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .source-box {
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+      font-size: 0.85rem;
+    }
+    .source-box strong { color: var(--primary-dark); }
+
+    .apa-box {
+      background: #fffbe0;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 0.82rem;
+    }
+    .apa-box h5 { color: #92400e; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 4px; }
+
+    .chart-container { position: relative; height: 250px; width: 100%; margin-bottom: 12px; }
+
+    /* Checklist Box */
+    .checklist-box {
+      background: #faf5ff;
+      border: 1px solid #e9d5ff;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .checklist-box h4 { font-size: 0.85rem; color: #6b21a8; text-transform: uppercase; margin-bottom: 6px; }
+    .checklist-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.8rem; color: #581c87; }
+
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 6px; }
+    
+    select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.88rem;
+      outline: none;
+    }
+    select:focus, textarea:focus { border-color: var(--primary); }
+    textarea { height: 140px; resize: vertical; }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: #e2e8f0; color: var(--text); }
+    .btn-secondary:hover { background: #cbd5e1; }
+
+    /* Feedback & Breakdown */
+    .feedback-box {
+      margin-top: 16px;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      display: none;
+    }
+    .feedback-box.correct { background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46; }
+    .feedback-box.partial { background: #fef3c7; border: 1px solid #fde68a; color: #92400e; }
+    .feedback-box.incorrect { background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; }
+
+    .model-answer {
+      margin-top: 16px;
+      background: #f8fafc;
+      border: 1px dashed #cbd5e1;
+      border-radius: 8px;
+      padding: 14px;
+      display: none;
+    }
+    .model-answer h5 { color: var(--primary-dark); font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; }
+
+    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; }
+    .tag-fig { background: #dbeafe; color: #1e40af; }
+    .tag-unit { background: #d1fae5; color: #065f46; }
+    .tag-term { background: #f3e8ff; color: #6b21a8; }
+    .tag-cite { background: #ffedd5; color: #9a3412; }
+
+    .summary-footer {
+      margin-top: 24px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .level-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .badge-warmup { background: #fee2e2; color: #991b1b; }
+    .badge-guided { background: #e0e7ff; color: #3730a3; }
+    .badge-mastery { background: #fef3c7; color: #92400e; }
+
+    .error-card {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .error-card h5 { font-size: 0.85rem; color: #334155; margin-bottom: 4px; }
+    .error-card p { font-size: 0.82rem; color: #dc2626; font-style: italic; margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-text">
+      <h1><i class="fa-solid fa-pen-nib"></i> Audience-Appropriate Scientific Writing</h1>
+      <p>Year 8 Science • Pitching to Target Audience, Referencing Figures, Correct Units & APA In-Text Citations</p>
+    </div>
+    <div class="score-badge">
+      <div class="pts" id="totalScore">0</div>
+      <div class="lbl">Total XP</div>
+    </div>
+  </header>
+
+  <!-- Framework Guide -->
+  <div class="concept-box">
+    <strong style="color: var(--primary-dark);"><i class="fa-solid fa-graduation-cap"></i> Year 8 Scientific Communication Toolkit:</strong>
+    <div class="concept-grid">
+      <div class="concept-card">
+        <h4><span class="tag tag-fig">1. FIGURE NAMES</span> Reference Data</h4>
+        <p>Always name the graph in your text (e.g., <em>"As shown in Figure 1..."</em>).</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-unit">2. SI UNITS</span> Precise Data</h4>
+        <p>Pair every number with correct units (e.g., <em>bpm, °C, seconds, cm, Watts</em>).</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-term">3. AUDIENCE TONE</span> Scientific Register</h4>
+        <p>Use Year 8 terms (e.g., <em>plateau, kinetic energy, directly proportional, rate</em>).</p>
+      </div>
+      <div class="concept-card">
+        <h4><span class="tag tag-cite">4. CITATIONS</span> APA Referencing</h4>
+        <p>In-text: <em>(Author, Year)</em> + Full APA reference listed at the end.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="scenario-nav" id="scenarioNav"></div>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Left Panel: Data, Source & APA -->
+    <div class="card" id="leftPanel">
+      <h3 id="scenarioTitle" style="margin-bottom: 4px;">Scenario Title</h3>
+      <p id="scenarioDesc" style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 12px;">Scenario Description</p>
+
+      <!-- Chart Container (Hidden during Pre-Activity) -->
+      <div id="chartSection">
+        <div class="chart-container">
+          <canvas id="mainChart"></canvas>
+        </div>
+        <p id="figCaption" style="font-size: 0.8rem; text-align: center; color: var(--text-muted); font-style: italic; margin-bottom: 12px;">Figure 1: Title</p>
+
+        <div class="source-box">
+          <strong><i class="fa-solid fa-book-bookmark"></i> Reference Source Snippet:</strong>
+          <p id="scenarioSource" style="margin-top: 4px; color: #334155;"></p>
+          <p id="scenarioCitation" style="margin-top: 6px; font-weight: 700; color: #0369a1;"></p>
+        </div>
+
+        <div class="apa-box">
+          <h5><i class="fa-solid fa-quote-right"></i> Full APA 7th Reference Entry:</h5>
+          <p id="fullApaRef" style="font-family: monospace; color: #78350f;"></p>
+        </div>
+      </div>
+
+      <!-- Pre-Activity Info Banner -->
+      <div id="preActivityInfo" style="display: none; background: #fee2e2; border: 1px solid #fca5a5; padding: 14px; border-radius: 8px;">
+        <h4 style="color: #991b1b; font-size: 0.9rem; margin-bottom: 6px;"><i class="fa-solid fa-bug"></i> Pre-Activity: Spotting Scientific Writing Errors</h4>
+        <p style="font-size: 0.85rem; color: #7f1d1d;">Before writing your own paragraphs, analyze these 4 flawed student writing samples. Identify what error was made in each sentence!</p>
+      </div>
+    </div>
+
+    <!-- Right Panel: Student Interactive Activity -->
+    <div class="card" id="rightPanel">
+      <!-- PRE-ACTIVITY CONTAINER -->
+      <div id="preActivityContainer" style="display: none;">
+        <h4 style="font-size: 0.9rem; color: var(--primary-dark); margin-bottom: 12px;"><i class="fa-solid fa-magnifying-glass"></i> Diagnostic Checklist: Identify the Writing Errors</h4>
+        
+        <div class="error-card">
+          <h5>Sample A:</h5>
+          <p>"The car went 45 at 10 and then reached 90 when we made the ramp 20."</p>
+          <label style="font-size: 0.8rem; font-weight: 600;">Select Error Type:</label>
+          <select id="errA">
+            <option value="">Select error...</option>
+            <option value="correct">Missing SI units & unreferenced figure</option>
+            <option value="wrong">Spelling mistakes</option>
+          </select>
+        </div>
+
+        <div class="error-card">
+          <h5>Sample B:</h5>
+          <p>"My pulse was pounding super crazy post-jumps but then chilled out after a bit or whatever."</p>
+          <label style="font-size: 0.8rem; font-weight: 600;">Select Error Type:</label>
+          <select id="errB">
+            <option value="">Select error...</option>
+            <option value="correct">Too casual / inappropriate tone for Year 8 Science</option>
+            <option value="wrong">Missing graph title</option>
+          </select>
+        </div>
+
+        <div class="error-card">
+          <h5>Sample C:</h5>
+          <p>"Photosynthesis rates increased to 50 bubbles/min because of light."</p>
+          <label style="font-size: 0.8rem; font-weight: 600;">Select Error Type:</label>
+          <select id="errC">
+            <option value="">Select error...</option>
+            <option value="correct">Missing in-text citation & unreferenced figure name</option>
+            <option value="wrong">Incorrect science</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="checkPreActivity()"><i class="fa-solid fa-check"></i> Validate Error Spotting</button>
+      </div>
+
+      <!-- SCENARIO MAIN CONTAINER -->
+      <div id="scenarioMainContainer">
+        <!-- STEP 1: AUDIENCE TONE SELECTOR (Scenarios 1 & 2 only) -->
+        <div id="toneSelectBox" style="margin-bottom: 18px; background: #f8fafc; border: 1px solid var(--border); padding: 12px; border-radius: 8px;">
+          <h4 style="font-size: 0.88rem; color: var(--primary-dark); margin-bottom: 6px;"><i class="fa-solid fa-filter"></i> Step 1: Select Target Audience Tone (Year 8 Science)</h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Which draft option uses the appropriate tone for a Year 8 Science audience?</p>
+          
+          <div class="input-group">
+            <select id="selectRegister" onchange="checkRegisterSelection()"></select>
+          </div>
+          <div id="registerFeedback" style="font-size: 0.8rem; display: none; margin-top: 4px;"></div>
+        </div>
+
+        <!-- MASTERY ALERT BANNER FOR SCENARIOS 3 & 4 -->
+        <div id="masteryBanner" style="display: none; background: #fff7ed; border: 1px solid #ffedd5; padding: 10px; border-radius: 6px; margin-bottom: 14px; font-size: 0.85rem; color: #9a3412;">
+          <i class="fa-solid fa-lock"></i> <strong>Unscaffolded Independent Practice:</strong> Scenarios 3 & 4 are Free-Text only. Apply all 4 toolkit rules to write your complete scientific paragraph!
+        </div>
+
+        <!-- STEP 2: PARAGRAPH EDITOR -->
+        <div>
+          <h4 style="font-size: 0.88rem; color: var(--primary-dark); margin-bottom: 6px;"><i class="fa-solid fa-pen"></i> Step 2: Write / Refine Your Paragraph</h4>
+          
+          <div class="checklist-box">
+            <h4><i class="fa-solid fa-square-check"></i> Writing Checklist:</h4>
+            <div class="checklist-grid">
+              <span><i class="fa-solid fa-check text-success"></i> Name Figure 1</span>
+              <span><i class="fa-solid fa-check text-success"></i> Exact numbers + SI units</span>
+              <span><i class="fa-solid fa-check text-success"></i> Year 8 Target Tone</span>
+              <span><i class="fa-solid fa-check text-success"></i> In-Text Citation (Author, Year)</span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <textarea id="studentParagraph" placeholder="Write or edit your 3–4 sentence scientific paragraph here... Be sure to cite Figure 1, use exact units, maintain target audience tone, and include the in-text citation."></textarea>
+          </div>
+
+          <button class="btn btn-primary" onclick="checkParagraphAnswer()"><i class="fa-solid fa-paper-plane"></i> Evaluate Writing & Submit</button>
+        </div>
+      </div>
+
+      <!-- Feedback Area -->
+      <div id="feedbackBox" class="feedback-box"></div>
+
+      <!-- Model Exemplar -->
+      <div id="modelAnswerBox" class="model-answer">
+        <h5><i class="fa-solid fa-award"></i> Exemplar Year 8 Target Paragraph & APA Citation</h5>
+        <p id="modelText" style="font-size: 0.88rem; color: var(--text);"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Footer -->
+  <div class="summary-footer">
+    <div>
+      <h4>Completed Modules: <span id="completedCount">0</span> / <span id="totalScenarios">0</span></h4>
+      <p style="font-size: 0.85rem; color: var(--text-muted);">Master all writing tasks to earn the "Science Communicator" badge!</p>
+    </div>
+    <button class="btn btn-secondary" onclick="copyWorkSummary()"><i class="fa-solid fa-copy"></i> Copy Work Summary for Teacher</button>
+  </div>
+</div>
+
+<script>
+  const scenarios = [
+    {
+      id: "pre-activity",
+      title: "0. Error Spotting (Warm-Up)",
+      level: "warmup",
+      desc: "Identify common errors in scientific writing before drafting your own.",
+      figNum: "",
+      figTitle: "",
+      type: "none",
+      labels: [],
+      datasets: [],
+      sourceSnippet: "",
+      citationKey: "",
+      apaRef: ""
+    },
+    {
+      id: "write-heart-rate",
+      title: "1. Heart Rate Recovery",
+      level: "guided",
+      figNum: "Figure 1",
+      figTitle: "Figure 1: Heart rate (bpm) measured over 6 minutes post-exercise.",
+      desc: "Communicating heart rate recovery findings clearly using proper physiology terms.",
+      type: "single-line",
+      labels: ["0 min", "1 min", "2 min", "3 min", "4 min", "5 min", "6 min"],
+      datasets: [{ label: "Heart Rate (bpm)", data: [150, 130, 110, 95, 82, 74, 70], borderColor: "#dc2626", backgroundColor: "#dc2626" }],
+      yAxisLabel: "Heart Rate (bpm)",
+      xAxisLabel: "Time Post-Exercise (min)",
+      sourceSnippet: "Class data shows heart rate peaked at 150 bpm immediately after exercise and took 6 minutes to return to resting level (70 bpm).",
+      citationKey: "(Glennie Science, 2026)",
+      apaRef: "Glennie Science. (2026). Human heart rate recovery dynamics post-exercise. Glennie Junior Science Journal, 12(1), 14–18.",
+      registers: [
+        { text: "Select audience tone draft...", correct: false },
+        { text: "Too Casual: 'My heart was pounding super fast at 150 after jumps, but then it chilled out back to normal 70 after 6 mins or whatever.'", correct: false },
+        { text: "Too Technical: 'Post-exercise tachycardia registered at 150 bpm, whereupon parasympathetic reactivation induced cardiac deceleration to 70 bpm over 360 seconds.'", correct: false },
+        { text: "Year 8 Target Tone: 'As shown in Figure 1, peak heart rate reached 150 bpm immediately following exercise. Over 6 minutes of rest, heart rate steadily decreased back to resting levels of 70 bpm (Glennie Science, 2026).'", correct: true }
+      ],
+      requiredKeywords: ["figure 1", "bpm", "150", "70", "6", "resting", "glennie science, 2026"],
+      model: "<span class='tag tag-fig'>FIGURE:</span> As shown in Figure 1, <span class='tag tag-term'>PHYSIOLOGY TREND:</span> heart rate peaked at <span class='tag tag-unit'>150 bpm</span> immediately following exercise. Over a 6-minute recovery period, the heart rate steadily decreased until returning to the resting state of <span class='tag tag-unit'>70 bpm</span> <span class='tag tag-cite'>(Glennie Science, 2026)</span>."
+    },
+    {
+      id: "write-dissolving",
+      title: "2. Dissolving Sugar Rate",
+      level: "guided",
+      figNum: "Figure 1",
+      figTitle: "Figure 1: Time taken (s) for sugar to dissolve across water temperatures (°C).",
+      desc: "Explaining thermal energy and particle reaction rate to a Year 8 audience.",
+      type: "single-line",
+      labels: ["20°C", "30°C", "40°C", "50°C", "60°C"],
+      datasets: [{ label: "Dissolving Time (s)", data: [120, 85, 60, 48, 38], borderColor: "#0891b2", backgroundColor: "#0891b2" }],
+      yAxisLabel: "Dissolving Time (seconds)",
+      xAxisLabel: "Water Temperature (°C)",
+      sourceSnippet: "Experimental trials confirmed dissolving time dropped from 120s at 20°C to 60s at 40°C, and down to 38s at 60°C due to particle kinetic energy.",
+      citationKey: "(Royal Society of Chemistry, 2021)",
+      apaRef: "Royal Society of Chemistry. (2021). Temperature effects on solute dissolution rates. RSC Educational Resources, 44(3), 112–119.",
+      registers: [
+        { text: "Select audience tone draft...", correct: false },
+        { text: "Too Casual: 'Hotter water makes the sugar disappear way faster cause the water molecules are bumping around like crazy.'", correct: false },
+        { text: "Too Technical: 'Thermodynamic kinetic acceleration increases molecular collision frequency across the solute-solvent boundary, exponentially reducing dissolution latency.'", correct: false },
+        { text: "Year 8 Target Tone: 'As illustrated in Figure 1, increasing water temperature increases the dissolving rate. At 20°C, sugar took 120 seconds to dissolve, but this decreased to 60 seconds at 40°C because warmer particles have more kinetic energy (Royal Society of Chemistry, 2021).'", correct: true }
+      ],
+      requiredKeywords: ["figure 1", "120", "60", "20°c", "40°c", "kinetic energy", "seconds", "royal society of chemistry, 2021"],
+      model: "<span class='tag tag-fig'>FIGURE:</span> As illustrated in Figure 1, <span class='tag tag-term'>SCIENTIFIC PRINCIPLE:</span> increasing water temperature accelerates the dissolving rate due to increased particle <span class='tag tag-term'>kinetic energy</span>. Dissolving time decreased from <span class='tag tag-unit'>120 s</span> at <span class='tag tag-unit'>20°C</span> down to <span class='tag tag-unit'>60 s</span> at <span class='tag tag-unit'>40°C</span> <span class='tag tag-cite'>(Royal Society of Chemistry, 2021)</span>."
+    },
+    {
+      id: "write-ramp-height",
+      title: "3. Ramp Height vs. Distance",
+      level: "freetext-only",
+      figNum: "Figure 1",
+      figTitle: "Figure 1: Distance traveled (cm) by a toy car at varying ramp heights (cm).",
+      desc: "Writing an evidence-based paragraph on gravitational energy transformation.",
+      type: "single-line",
+      labels: ["10 cm", "20 cm", "30 cm", "40 cm", "50 cm"],
+      datasets: [{ label: "Distance (cm)", data: [45, 90, 135, 180, 225], borderColor: "#16a34a", backgroundColor: "#16a34a" }],
+      yAxisLabel: "Distance Traveled (cm)",
+      xAxisLabel: "Ramp Height (cm)",
+      sourceSnippet: "Releasing the car from doubled ramp heights (10 cm to 20 cm) doubled rolling distance (45 cm to 90 cm) due to potential energy.",
+      citationKey: "(Physics Education, 2024)",
+      apaRef: "Physics Education. (2024). Gravitational potential energy transformations in inclined planes. Physics Teacher Quarterly, 18(2), 88–94.",
+      registers: null,
+      requiredKeywords: ["figure 1", "10 cm", "20 cm", "45 cm", "90 cm", "proportional", "potential energy", "physics education, 2024"],
+      model: "<span class='tag tag-fig'>FIGURE:</span> According to Figure 1, <span class='tag tag-term'>RELATIONSHIP:</span> travel distance is <span class='tag tag-term'>directly proportional</span> to ramp height. Doubling the ramp height from <span class='tag tag-unit'>10 cm</span> to <span class='tag tag-unit'>20 cm</span> doubled distance from <span class='tag tag-unit'>45 cm</span> to <span class='tag tag-unit'>90 cm</span> as gravitational <span class='tag tag-term'>potential energy</span> transformed into kinetic energy <span class='tag tag-cite'>(Physics Education, 2024)</span>."
+    },
+    {
+      id: "write-photosynthesis",
+      title: "4. Light vs. Photosynthesis",
+      level: "freetext-only",
+      figNum: "Figure 1",
+      figTitle: "Figure 1: Oxygen gas bubble rate (bubbles/min) at varying lamp wattages (W).",
+      desc: "Describing limiting factors and rate plateaus for Year 8 Biology.",
+      type: "single-line",
+      labels: ["10 W", "20 W", "30 W", "40 W", "50 W", "60 W"],
+      datasets: [{ label: "Bubbles / min", data: [12, 25, 38, 50, 51, 50], borderColor: "#4f46e5", backgroundColor: "#4f46e5" }],
+      yAxisLabel: "Oxygen Bubbles / min",
+      xAxisLabel: "Lamp Wattage (W)",
+      sourceSnippet: "Pondweed oxygen output increased from 12 to 50 bubbles/min between 10W and 40W, before reaching a plateau at 51 bubbles/min.",
+      citationKey: "(Biology Journal, 2023)",
+      apaRef: "Biology Journal. (2023). Limiting factors in aquatic plant photosynthesis rates. Australian Plant Science Review, 29(4), 201–207.",
+      registers: null,
+      requiredKeywords: ["figure 1", "12", "50", "10 w", "40 w", "plateau", "limiting factor", "biology journal, 2023"],
+      model: "<span class='tag tag-fig'>FIGURE:</span> As displayed in Figure 1, <span class='tag tag-term'>BIOLOGICAL TREND:</span> oxygen production increased from <span class='tag tag-unit'>12 bubbles/min</span> at <span class='tag tag-unit'>10 W</span> to <span class='tag tag-unit'>50 bubbles/min</span> at <span class='tag tag-unit'>40 W</span>. Beyond 40 W, the rate <span class='tag tag-term'>plateaued</span> at 51 bubbles/min because light was no longer the <span class='tag tag-term'>limiting factor</span> <span class='tag tag-cite'>(Biology Journal, 2023)</span>."
+    }
+  ];
+
+  let currentScenarioIdx = 0;
+  let chartInstance = null;
+  let scores = {};
+
+  const scenarioNavEl = document.getElementById("scenarioNav");
+  const scenarioTitleEl = document.getElementById("scenarioTitle");
+  const scenarioDescEl = document.getElementById("scenarioDesc");
+  const figCaptionEl = document.getElementById("figCaption");
+  const scenarioSourceEl = document.getElementById("scenarioSource");
+  const scenarioCitationEl = document.getElementById("scenarioCitation");
+  const fullApaRefEl = document.getElementById("fullApaRef");
+
+  const totalScoreEl = document.getElementById("totalScore");
+  const completedCountEl = document.getElementById("completedCount");
+  const totalScenariosEl = document.getElementById("totalScenarios");
+
+  const selectRegisterEl = document.getElementById("selectRegister");
+  const registerFeedbackEl = document.getElementById("registerFeedback");
+  const studentParagraphEl = document.getElementById("studentParagraph");
+
+  const feedbackBoxEl = document.getElementById("feedbackBox");
+  const modelAnswerBoxEl = document.getElementById("modelAnswerBox");
+  const modelTextEl = document.getElementById("modelText");
+
+  function initApp() {
+    totalScenariosEl.textContent = scenarios.length - 1; // Exclude warm-up from total count
+    renderNav();
+    loadScenario(0);
+  }
+
+  function renderNav() {
+    scenarioNavEl.innerHTML = "";
+    scenarios.forEach((s, idx) => {
+      const btn = document.createElement("button");
+      btn.className = `nav-btn ${idx === currentScenarioIdx ? "active" : ""}`;
+      
+      let badgeClass = "badge-guided";
+      let badgeText = "Guided";
+      if (s.level === "warmup") { badgeClass = "badge-warmup"; badgeText = "Warm-Up"; }
+      else if (s.level === "freetext-only") { badgeClass = "badge-mastery"; badgeText = "Unscaffolded"; }
+
+      btn.innerHTML = `<i class="fa-solid ${scores[s.id] ? 'fa-circle-check' : 'fa-pen-nib'}"></i> ${s.title} <span class="level-badge ${badgeClass}">${badgeText}</span>`;
+      btn.onclick = () => loadScenario(idx);
+      scenarioNavEl.appendChild(btn);
+    });
+  }
+
+  function loadScenario(idx) {
+    currentScenarioIdx = idx;
+    const sc = scenarios[idx];
+
+    feedbackBoxEl.style.display = "none";
+    modelAnswerBoxEl.style.display = "none";
+    registerFeedbackEl.style.display = "none";
+    studentParagraphEl.value = "";
+
+    renderNav();
+
+    scenarioTitleEl.textContent = sc.title;
+    scenarioDescEl.textContent = sc.desc;
+
+    if (sc.level === "warmup") {
+      document.getElementById("chartSection").style.display = "none";
+      document.getElementById("preActivityInfo").style.display = "block";
+      document.getElementById("preActivityContainer").style.display = "block";
+      document.getElementById("scenarioMainContainer").style.display = "none";
+    } else {
+      document.getElementById("chartSection").style.display = "block";
+      document.getElementById("preActivityInfo").style.display = "none";
+      document.getElementById("preActivityContainer").style.display = "none";
+      document.getElementById("scenarioMainContainer").style.display = "block";
+
+      figCaptionEl.textContent = sc.figTitle;
+      scenarioSourceEl.textContent = sc.sourceSnippet;
+      scenarioCitationEl.textContent = `In-Text Citation Required: ${sc.citationKey}`;
+      fullApaRefEl.textContent = sc.apaRef;
+
+      if (sc.level === "freetext-only") {
+        document.getElementById("toneSelectBox").style.display = "none";
+        document.getElementById("masteryBanner").style.display = "block";
+      } else {
+        document.getElementById("toneSelectBox").style.display = "block";
+        document.getElementById("masteryBanner").style.display = "none";
+        populateDropdown(selectRegisterEl, sc.registers);
+      }
+
+      renderChart(sc);
+    }
+  }
+
+  function populateDropdown(selectEl, options) {
+    selectEl.innerHTML = "";
+    if (!options) return;
+    options.forEach((opt, i) => {
+      const o = document.createElement("option");
+      o.value = i;
+      o.textContent = opt.text;
+      selectEl.appendChild(o);
+    });
+  }
+
+  function renderChart(sc) {
+    if (sc.type === "none") return;
+    const ctx = document.getElementById("mainChart").getContext("2d");
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: sc.labels,
+        datasets: sc.datasets.map(ds => ({
+          ...ds,
+          borderWidth: 2,
+          pointRadius: 5,
+          tension: 0.1
+        }))
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: sc.xAxisLabel } },
+          y: { title: { display: true, text: sc.yAxisLabel } }
+        }
+      }
+    });
+  }
+
+  function checkPreActivity() {
+    const a = document.getElementById("errA").value;
+    const b = document.getElementById("errB").value;
+    const c = document.getElementById("errC").value;
+
+    if (a === "correct" && b === "correct" && c === "correct") {
+      scores["pre-activity"] = 100;
+      updateScoreUI();
+      showFeedback("correct", "<i class='fa-solid fa-circle-check'></i> <strong>Spot On!</strong> You successfully identified all writing errors (+100 XP). You are ready for scenario drafting!");
+    } else {
+      showFeedback("incorrect", "<i class='fa-solid fa-circle-xmark'></i> <strong>Check your choices.</strong> Sample A misses units/figures, Sample B uses informal slang, and Sample C lacks citations.");
+    }
+  }
+
+  function checkRegisterSelection() {
+    const sc = scenarios[currentScenarioIdx];
+    const val = parseInt(selectRegisterEl.value);
+
+    if (val === 0) {
+      registerFeedbackEl.style.display = "none";
+      return;
+    }
+
+    if (sc.registers[val].correct) {
+      registerFeedbackEl.style.color = "#15803d";
+      registerFeedbackEl.innerHTML = "<i class='fa-solid fa-circle-check'></i> <strong>Correct Target Tone!</strong> This option balances scientific accuracy with clear Year 8 vocabulary.";
+      studentParagraphEl.value = sc.registers[val].text.replace("Year 8 Target Tone: ", "").replace(/['"]/g, "");
+    } else {
+      registerFeedbackEl.style.color = "#b91c1c";
+      registerFeedbackEl.innerHTML = "<i class='fa-solid fa-circle-xmark'></i> <strong>Incorrect Tone.</strong> Check if this option is too casual (slang/informal) or overly technical for Year 8.";
+    }
+    registerFeedbackEl.style.display = "block";
+  }
+
+  function checkParagraphAnswer() {
+    const sc = scenarios[currentScenarioIdx];
+    const text = studentParagraphEl.value.toLowerCase();
+
+    if (text.trim().length < 40) {
+      showFeedback("partial", "<i class='fa-solid fa-triangle-exclamation'></i> Your response is too brief. Be sure to address Figure 1, specific numbers + SI units, target tone, and the citation.");
+      return;
+    }
+
+    let hits = 0;
+    sc.requiredKeywords.forEach(kw => {
+      if (text.includes(kw)) hits++;
+    });
+
+    const matchRatio = hits / sc.requiredKeywords.length;
+
+    if (matchRatio >= 0.45) {
+      scores[sc.id] = 100;
+      updateScoreUI();
+      showFeedback("correct", "<i class='fa-solid fa-circle-check'></i> <strong>Exemplar Writing!</strong> Your paragraph effectively cites Figure 1, uses accurate units, maintains target audience tone, and acknowledges the source (+100 XP).");
+      showModelAnswer();
+    } else {
+      showFeedback("partial", "<i class='fa-solid fa-circle-exclamation'></i> <strong>Almost there!</strong> Double-check that you've included: 1) 'Figure 1', 2) exact numbers + units, 3) key scientific terms, and 4) the in-text citation " + sc.citationKey + ".");
+    }
+  }
+
+  function showFeedback(type, message) {
+    feedbackBoxEl.className = `feedback-box ${type}`;
+    feedbackBoxEl.innerHTML = message;
+    feedbackBoxEl.style.display = "block";
+  }
+
+  function showModelAnswer() {
+    modelTextEl.innerHTML = scenarios[currentScenarioIdx].model;
+    modelAnswerBoxEl.style.display = "block";
+  }
+
+  function updateScoreUI() {
+    const completed = Object.keys(scores).length;
+    totalScoreEl.textContent = completed * 100;
+    completedCountEl.textContent = Math.max(0, completed - 1);
+    renderNav();
+  }
+
+  function copyWorkSummary() {
+    const completed = Object.keys(scores).length;
+    let summaryText = `Year 8 Science - Audience-Appropriate Writing Summary\nCompleted: ${completed}/${scenarios.length}\nTotal XP: ${completed * 100}\n\nStatus:\n`;
+    scenarios.forEach(sc => {
+      summaryText += `- ${sc.title}: ${scores[sc.id] ? "COMPLETED (100 XP)" : "Pending"}\n`;
+    });
+
+    navigator.clipboard.writeText(summaryText).then(() => {
+      alert("Work summary copied to clipboard! You can paste this into your document or email to your teacher.");
+    });
+  }
+
+  window.onload = initApp;
+</script>
+</body>
+</html>
