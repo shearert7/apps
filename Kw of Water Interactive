@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoionization of Water (Kw) & Temperature</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdfa; /* Tailwind teal-50 */
+            color: #0f172a;
+        }
+        
+        /* Custom Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #0ea5e9; /* sky-500 */
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #cbd5e1; /* slate-300 */
+            border-radius: 4px;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        
+        /* pH Scale background */
+        .ph-scale-bg {
+            background: linear-gradient(to right, 
+                #ef4444 0%,   /* red-500 */
+                #f97316 25%,  /* orange-500 */
+                #eab308 50%,  /* yellow-500 */
+                #22c55e 50%,  /* green-500 (around 7) */
+                #3b82f6 75%,  /* blue-500 */
+                #8b5cf6 100%  /* violet-500 */
+            );
+        }
+
+        .data-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+
+    <header class="w-full max-w-5xl mb-8 text-center">
+        <h1 class="text-3xl md:text-5xl font-bold text-slate-800 mb-3 tracking-tight">
+            The Autoionization of Water
+        </h1>
+        <p class="text-slate-600 text-lg md:text-xl max-w-2xl mx-auto">
+            Explore how temperature affects the equilibrium constant (<span class="font-semibold italic">K<sub>w</sub></span>), and discover why pure water isn't always pH 7.0!
+        </p>
+    </header>
+
+    <main class="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left Column: Controls & Values -->
+        <div class="lg:col-span-5 flex flex-col gap-6">
+            
+            <!-- Temperature Control -->
+            <div class="data-card p-6 bg-gradient-to-br from-sky-50 to-white border border-sky-100">
+                <div class="flex justify-between items-end mb-4">
+                    <label for="tempSlider" class="text-lg font-semibold text-slate-700">Temperature</label>
+                    <div class="text-3xl font-bold text-sky-600"><span id="tempValueDisplay">25</span>°C</div>
+                </div>
+                <input type="range" id="tempSlider" min="0" max="100" value="25" step="1" class="w-full mb-2">
+                <div class="flex justify-between text-xs font-medium text-slate-400">
+                    <span>0°C (Freezing)</span>
+                    <span>100°C (Boiling)</span>
+                </div>
+            </div>
+
+            <!-- Real-time Values Display -->
+            <div class="data-card p-6 border border-slate-100">
+                <h2 class="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Equilibrium Values</h2>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Kw -->
+                    <div class="col-span-2 bg-slate-50 rounded-lg p-4 border border-slate-100">
+                        <div class="text-sm font-semibold text-slate-500 mb-1">Ion-Product Constant (K<sub>w</sub>)</div>
+                        <div class="text-2xl font-bold text-slate-800" id="kwDisplay">1.00 &times; 10<sup>-14</sup></div>
+                        <div class="text-xs text-slate-400 mt-1">pK<sub>w</sub> = <span id="pkwDisplay">14.00</span></div>
+                    </div>
+                    
+                    <!-- pH & pOH -->
+                    <div class="bg-red-50 rounded-lg p-4 border border-red-100 flex flex-col items-center justify-center">
+                        <div class="text-sm font-semibold text-red-500 mb-1">pH</div>
+                        <div class="text-3xl font-bold text-red-700" id="phDisplay">7.00</div>
+                    </div>
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-100 flex flex-col items-center justify-center">
+                        <div class="text-sm font-semibold text-blue-500 mb-1">pOH</div>
+                        <div class="text-3xl font-bold text-blue-700" id="pohDisplay">7.00</div>
+                    </div>
+
+                    <!-- [H+] & [OH-] -->
+                    <div class="col-span-2 grid grid-cols-2 gap-4 mt-2">
+                        <div>
+                            <div class="text-xs font-semibold text-slate-500 mb-1">[H⁺] Concentration</div>
+                            <div class="text-base font-bold text-slate-700" id="hConcDisplay">1.00 &times; 10<sup>-7</sup> M</div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-semibold text-slate-500 mb-1">[OH⁻] Concentration</div>
+                            <div class="text-base font-bold text-slate-700" id="ohConcDisplay">1.00 &times; 10<sup>-7</sup> M</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Visuals & Explanation -->
+        <div class="lg:col-span-7 flex flex-col gap-6">
+            
+            <!-- Visualization -->
+            <div class="data-card p-6 border border-slate-100 flex flex-col h-full">
+                <h2 class="text-xl font-bold text-slate-800 mb-6">Dynamic Neutrality</h2>
+                
+                <!-- pH Scale Visualization -->
+                <div class="mb-8 relative">
+                    <div class="flex justify-between text-xs text-slate-500 mb-2 px-1">
+                        <span>pH 0 (Acidic)</span>
+                        <span>pH 7</span>
+                        <span>pH 14 (Basic)</span>
+                    </div>
+                    
+                    <div class="w-full h-8 ph-scale-bg rounded-full relative shadow-inner overflow-hidden border border-slate-200">
+                        <!-- Fixed pH 7 Marker -->
+                        <div class="absolute top-0 bottom-0 w-0.5 bg-white opacity-50 z-10" style="left: 50%;"></div>
+                    </div>
+                    
+                    <!-- Moving Neutral Marker -->
+                    <div id="neutralMarker" class="absolute top-10 flex flex-col items-center transition-all duration-300 ease-out" style="left: 50%; transform: translateX(-50%);">
+                        <div class="w-4 h-4 bg-slate-800 rounded-sm transform rotate-45 -mt-2 border-2 border-white shadow-sm"></div>
+                        <div class="bg-slate-800 text-white text-xs font-bold px-2 py-1 rounded shadow-md mt-1 whitespace-nowrap">
+                            Neutral pH: <span id="markerPhText">7.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 flex-grow flex items-end justify-center gap-12 border-b border-slate-200 pb-4 h-40">
+                    <!-- H+ Bar -->
+                    <div class="flex flex-col items-center w-24">
+                        <div id="hBar" class="w-full bg-red-400 rounded-t-md transition-all duration-300 shadow-md relative group flex items-end justify-center" style="height: 50%;">
+                            <span class="text-white text-xs font-bold mb-2 hidden group-hover:block">[H⁺]</span>
+                        </div>
+                        <div class="mt-3 font-semibold text-slate-700 text-center">H⁺ Ions</div>
+                    </div>
+                    
+                    <!-- OH- Bar -->
+                    <div class="flex flex-col items-center w-24">
+                        <div id="ohBar" class="w-full bg-blue-400 rounded-t-md transition-all duration-300 shadow-md relative group flex items-end justify-center" style="height: 50%;">
+                             <span class="text-white text-xs font-bold mb-2 hidden group-hover:block">[OH⁻]</span>
+                        </div>
+                        <div class="mt-3 font-semibold text-slate-700 text-center">OH⁻ Ions</div>
+                    </div>
+                </div>
+                <p class="text-center text-xs text-slate-400 mt-2">
+                    *Bar height is scaled logarithmically to visualize concentration changes relative to 25°C. Notice they always remain equal!
+                </p>
+            </div>
+
+        </div>
+        
+        <!-- Full Width Explanation -->
+        <div class="lg:col-span-12 data-card p-6 md:p-8 bg-slate-800 text-white shadow-xl mt-2">
+            <h3 class="text-2xl font-bold mb-4 text-sky-300 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Why does this happen?
+            </h3>
+            <div class="grid md:grid-cols-2 gap-8 text-slate-300 text-sm md:text-base leading-relaxed">
+                <div>
+                    <p class="mb-4">
+                        Water slightly dissociates into ions in a process called <strong>autoionization</strong>: 
+                        <br>
+                        <span class="inline-block mt-2 font-mono bg-slate-700 px-3 py-1 rounded text-sky-200 text-lg shadow-inner">H₂O(l) ⇌ H⁺(aq) + OH⁻(aq)</span>
+                    </p>
+                    <p>
+                        This reaction is <strong>endothermic</strong>, meaning it requires heat to proceed forward. According to Le Chatelier's Principle, as you <span class="text-red-300 font-semibold">increase the temperature</span> (adding heat), the equilibrium shifts to the right, producing more H⁺ and OH⁻ ions.
+                    </p>
+                </div>
+                <div>
+                    <p class="mb-4">
+                        Because there are more H⁺ ions at higher temperatures, the <strong>pH decreases</strong> (becomes a smaller number). 
+                    </p>
+                    <p class="bg-slate-700/50 p-4 rounded-lg border border-slate-600 shadow-inner">
+                        <strong class="text-white">Crucial Concept:</strong> Even though the pH drops below 7.0 at high temperatures, <strong>the water is still neutral!</strong> Neutrality does not strictly mean "pH = 7". Neutrality means that the concentration of hydrogen ions equals the concentration of hydroxide ions (<span class="font-mono text-sky-200">[H⁺] = [OH⁻]</span>). In pure water, this is always true, regardless of temperature.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="w-full max-w-5xl mt-12 text-center text-slate-400 text-sm pb-8">
+        <p>Calculations use the empirical thermodynamic equation: pK<sub>w</sub> = 4471/T + 0.01706×T - 6.0875 (where T is in Kelvin).</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const tempSlider = document.getElementById('tempSlider');
+        const tempValueDisplay = document.getElementById('tempValueDisplay');
+        const kwDisplay = document.getElementById('kwDisplay');
+        const pkwDisplay = document.getElementById('pkwDisplay');
+        const phDisplay = document.getElementById('phDisplay');
+        const pohDisplay = document.getElementById('pohDisplay');
+        const hConcDisplay = document.getElementById('hConcDisplay');
+        const ohConcDisplay = document.getElementById('ohConcDisplay');
+        
+        const neutralMarker = document.getElementById('neutralMarker');
+        const markerPhText = document.getElementById('markerPhText');
+        const hBar = document.getElementById('hBar');
+        const ohBar = document.getElementById('ohBar');
+
+        // Formats a number to scientific HTML
+        function formatScientific(val) {
+            const parts = val.toExponential(2).split('e');
+            const base = parts[0];
+            const exp = parseInt(parts[1], 10);
+            return `${base} &times; 10<sup>${exp}</sup>`;
+        }
+
+        // Calculate and update UI
+        function updateSimulation() {
+            const tempC = parseFloat(tempSlider.value);
+            const tempK = tempC + 273.15;
+
+            tempValueDisplay.textContent = tempC;
+
+            // Empirical formula for pKw of water based on absolute temperature
+            // pKw = 4471/T + 0.01706 * T - 6.0875
+            const pKw = (4471 / tempK) + (0.01706 * tempK) - 6.0875;
+            const kw = Math.pow(10, -pKw);
+            
+            // In pure water, [H+] = [OH-]
+            const pH = pKw / 2;
+            const pOH = pH; // Neutral water
+            const concentration = Math.pow(10, -pH);
+
+            // Update Text Displays
+            kwDisplay.innerHTML = formatScientific(kw);
+            pkwDisplay.textContent = pKw.toFixed(2);
+            
+            phDisplay.textContent = pH.toFixed(2);
+            pohDisplay.textContent = pOH.toFixed(2);
+            
+            hConcDisplay.innerHTML = formatScientific(concentration) + ' M';
+            ohConcDisplay.innerHTML = formatScientific(concentration) + ' M';
+
+            // Update Visualization: pH Marker Position
+            // Assuming the scale is strictly 0 to 14
+            const percentage = (pH / 14) * 100;
+            neutralMarker.style.left = `${percentage}%`;
+            markerPhText.textContent = pH.toFixed(2);
+
+            // Update Visualization: Concentration Bars
+            // Scale logic: pH ranges roughly from 6.13 (100C) to 7.47 (0C)
+            // Lower pH means HIGHER concentration (higher bar).
+            // Let's normalize it to make visually appealing changes.
+            // Map pH 7.5 to ~20% height, and pH 6.0 to ~100% height.
+            const minPh = 6.0;
+            const maxPh = 7.5;
+            let heightPct = ((maxPh - pH) / (maxPh - minPh)) * 80 + 20; 
+            
+            // Clamp to avoid visual overflow
+            heightPct = Math.max(10, Math.min(100, heightPct));
+
+            hBar.style.height = `${heightPct}%`;
+            ohBar.style.height = `${heightPct}%`;
+        }
+
+        // Event Listeners
+        tempSlider.addEventListener('input', updateSimulation);
+
+        // Initial render
+        updateSimulation();
+    </script>
+</body>
+</html>
