@@ -52,4 +52,168 @@
                 let animationFrameId;
 
                 // Visual scaling (pseudo-logarithmic) so particles fit on screen
-                // Neutral water at 25C (
+                // Neutral water at 25C (1e-7 M) will show roughly 10 particles of each
+                const numH = Math.min(200, Math.max(0, Math.round(10 * Math.pow(H / 1e-7, 0.3))));
+                const numOH = Math.min(200, Math.max(0, Math.round(10 * Math.pow(OH / 1e-7, 0.3))));
+
+                let particles = [];
+                
+                // Initialize H+ particles
+                for(let i=0; i<numH; i++) {
+                    particles.push({ 
+                        x: Math.random() * canvas.width, 
+                        y: Math.random() * canvas.height, 
+                        vx: (Math.random() - 0.5) * 2, 
+                        vy: (Math.random() - 0.5) * 2, 
+                        type: 'H' 
+                    });
+                }
+                // Initialize OH- particles
+                for(let i=0; i<numOH; i++) {
+                    particles.push({ 
+                        x: Math.random() * canvas.width, 
+                        y: Math.random() * canvas.height, 
+                        vx: (Math.random() - 0.5) * 2, 
+                        vy: (Math.random() - 0.5) * 2, 
+                        type: 'OH' 
+                    });
+                }
+
+                // Speed multiplier based on temperature (hotter = faster)
+                const speedFactor = 0.5 + (tempC / 50);
+
+                const render = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    
+                    particles.forEach(p => {
+                        // Move
+                        p.x += p.vx * speedFactor;
+                        p.y += p.vy * speedFactor;
+                        
+                        // Bounce off walls
+                        if(p.x < 6 || p.x > canvas.width - 6) p.vx *= -1;
+                        if(p.y < 6 || p.y > canvas.height - 6) p.vy *= -1;
+
+                        // Keep in bounds
+                        p.x = Math.max(6, Math.min(canvas.width - 6, p.x));
+                        p.y = Math.max(6, Math.min(canvas.height - 6, p.y));
+
+                        // Draw particle
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI);
+                        ctx.fillStyle = p.type === 'H' ? '#ef4444' : '#3b82f6';
+                        ctx.fill();
+                        
+                        // Draw label
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 8px sans-serif';
+                        ctx.textAlign = "center";
+                        ctx.textBaseline = "middle";
+                        ctx.fillText(p.type === 'H' ? 'H+' : 'OH-', p.x, p.y);
+                    });
+
+                    animationFrameId = requestAnimationFrame(render);
+                }
+
+                render();
+
+                return () => cancelAnimationFrame(animationFrameId);
+            }, [H, OH, tempC]); // Re-run animation if concentrations or temp changes
+
+            return (
+                <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
+                    <h1 className="text-3xl font-bold text-center text-blue-900 mb-2">Water Equilibrium (K<sub>w</sub>) Simulator</h1>
+                    <p className="text-center text-gray-600 mb-8">Explore how temperature and added acid affect the autoionization of water.</p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        
+                        {/* Left Column: Controls and Data */}
+                        <div className="space-y-6">
+                            
+                            {/* Temperature Control */}
+                            <div className="bg-blue-50 p-5 rounded-lg border border-blue-100">
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Temperature: {tempC}°C
+                                </label>
+                                <input 
+                                    type="range" 
+                                    min="0" max="100" 
+                                    value={tempC} 
+                                    onChange={(e) => setTempC(Number(e.target.value))}
+                                    className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">Notice how K<sub>w</sub> increases as temperature rises. The autoionization of water is endothermic.</p>
+                            </div>
+
+                            {/* Acid Control */}
+                            <div className="bg-red-50 p-5 rounded-lg border border-red-100">
+                                <label className="block text-sm font-bold text-gray-700 mb-2">
+                                    Add Acid (H⁺): {Ca === 0 ? "None" : `${Ca.toExponential(1)} M`}
+                                </label>
+                                <input 
+                                    type="range" 
+                                    min="0" max="5" step="0.1"
+                                    value={acidScale} 
+                                    onChange={(e) => setAcidScale(Number(e.target.value))}
+                                    className="w-full h-2 bg-red-200 rounded-lg appearance-none cursor-pointer"
+                                />
+                                <p className="text-xs text-gray-500 mt-2">Slide to increase the amount of strong acid added to the water.</p>
+                            </div>
+
+                            {/* Data Panel */}
+                            <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
+                                <h2 className="text-lg font-bold mb-3 border-b pb-2">Calculated Values</h2>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div><span className="font-semibold text-gray-600">K<sub>w</sub>:</span> {Kw.toExponential(3)}</div>
+                                    <div><span className="font-semibold text-gray-600">pK<sub>w</sub>:</span> {pKw.toFixed(2)}</div>
+                                    <div className="text-red-600"><span className="font-semibold">pH:</span> {pH.toFixed(2)}</div>
+                                    <div className="text-blue-600"><span className="font-semibold">pOH:</span> {pOH.toFixed(2)}</div>
+                                    <div className="text-red-600"><span className="font-semibold">[H⁺]:</span> {H.toExponential(3)} M</div>
+                                    <div className="text-blue-600"><span className="font-semibold">[OH⁻]:</span> {OH.toExponential(3)} M</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Right Column: Particle View */}
+                        <div>
+                            <div className="bg-black rounded-lg overflow-hidden relative shadow-inner">
+                                <canvas 
+                                    ref={canvasRef} 
+                                    width="400" 
+                                    height="300" 
+                                    className="w-full h-64 object-cover"
+                                ></canvas>
+                                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                                    Particle Level View (Visually Scaled)
+                                </div>
+                            </div>
+                            
+                            {/* Explanation Block */}
+                            <div className="mt-6 bg-yellow-50 p-5 rounded-lg border border-yellow-200 text-sm text-gray-800">
+                                <h3 className="font-bold text-lg text-yellow-800 mb-2">Why does [OH⁻] decrease when H⁺ is added?</h3>
+                                <p className="mb-2">
+                                    This is a perfect example of <strong>Le Chatelier's Principle</strong>. Water is in a dynamic equilibrium:
+                                </p>
+                                <p className="text-center font-mono bg-white py-2 rounded border border-yellow-100 my-2">
+                                    H₂O(l) ⇌ H⁺(aq) + OH⁻(aq)
+                                </p>
+                                <p className="mb-2">
+                                    At any given temperature, the product of the ion concentrations must equal the equilibrium constant, K<sub>w</sub> 
+                                    (<strong>K<sub>w</sub> = [H⁺][OH⁻]</strong>). 
+                                </p>
+                                <p>
+                                    When you add acid, you increase the concentration of H⁺. To keep the K<sub>w</sub> value constant, the system shifts to the <em>left</em>. The extra H⁺ reacts with existing OH⁻ to form liquid water, thereby <strong>consuming OH⁻</strong> and driving its concentration down.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
