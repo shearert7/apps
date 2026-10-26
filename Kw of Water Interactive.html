@@ -22,21 +22,17 @@
     <script type="text/babel">
         function App() {
             const [tempC, setTempC] = React.useState(25);
-            // acidScale: 0 = No acid, 1 to 5 maps to 1e-6M to 1e-2M added acid
             const [acidScale, setAcidScale] = React.useState(0); 
 
             // Thermodynamic calculation of pKw based on temperature
             const T = tempC + 273.15;
-            // Empirical formula for pKw of water
             const pKw = (4470.99 / T) - 6.0875 + (0.01706 * T);
             const Kw = Math.pow(10, -pKw);
 
             // Added acid concentration (Ca)
             const Ca = acidScale > 0 ? Math.pow(10, -7 + acidScale) : 0;
 
-            // Calculate [H+] and [OH-] using equilibrium and charge balance
-            // [H+][OH-] = Kw  AND  [H+] = [OH-] + Ca
-            // => [H+]^2 - Ca[H+] - Kw = 0
+            // Calculate [H+] and [OH-]
             const H = (Ca + Math.sqrt(Ca * Ca + 4 * Kw)) / 2;
             const OH = Kw / H;
 
@@ -51,35 +47,51 @@
                 const ctx = canvas.getContext('2d');
                 let animationFrameId;
 
-                // Visual scaling (pseudo-logarithmic) so particles fit on screen
-                // Neutral water at 25C (1e-7 M) will show roughly 10 particles of each
+                // Visual scaling
                 const numH = Math.min(200, Math.max(0, Math.round(10 * Math.pow(H / 1e-7, 0.3))));
                 const numOH = Math.min(200, Math.max(0, Math.round(10 * Math.pow(OH / 1e-7, 0.3))));
+                const numH2O = 60; // Fixed number of solvent molecules
 
                 let particles = [];
                 
-                // Initialize H+ particles
-                for(let i=0; i<numH; i++) {
+                // Initialize H2O particles (solvent)
+                for(let i=0; i<numH2O; i++) {
                     particles.push({ 
                         x: Math.random() * canvas.width, 
                         y: Math.random() * canvas.height, 
-                        vx: (Math.random() - 0.5) * 2, 
-                        vy: (Math.random() - 0.5) * 2, 
-                        type: 'H' 
+                        vx: (Math.random() - 0.5) * 1.5, // Slightly slower than ions
+                        vy: (Math.random() - 0.5) * 1.5, 
+                        type: 'H2O' 
                     });
                 }
+                
+                // Initialize H+ particles
+                for(let i=0; i<numH2O; i++) { // offset loop so they don't block
+                    if (i < numH) {
+                        particles.push({ 
+                            x: Math.random() * canvas.width, 
+                            y: Math.random() * canvas.height, 
+                            vx: (Math.random() - 0.5) * 2.5, 
+                            vy: (Math.random() - 0.5) * 2.5, 
+                            type: 'H' 
+                        });
+                    }
+                }
+                
                 // Initialize OH- particles
-                for(let i=0; i<numOH; i++) {
-                    particles.push({ 
-                        x: Math.random() * canvas.width, 
-                        y: Math.random() * canvas.height, 
-                        vx: (Math.random() - 0.5) * 2, 
-                        vy: (Math.random() - 0.5) * 2, 
-                        type: 'OH' 
-                    });
+                for(let i=0; i<numH2O; i++) {
+                    if (i < numOH) {
+                        particles.push({ 
+                            x: Math.random() * canvas.width, 
+                            y: Math.random() * canvas.height, 
+                            vx: (Math.random() - 0.5) * 2.5, 
+                            vy: (Math.random() - 0.5) * 2.5, 
+                            type: 'OH' 
+                        });
+                    }
                 }
 
-                // Speed multiplier based on temperature (hotter = faster)
+                // Speed multiplier based on temperature
                 const speedFactor = 0.5 + (tempC / 50);
 
                 const render = () => {
@@ -91,25 +103,31 @@
                         p.y += p.vy * speedFactor;
                         
                         // Bounce off walls
-                        if(p.x < 6 || p.x > canvas.width - 6) p.vx *= -1;
-                        if(p.y < 6 || p.y > canvas.height - 6) p.vy *= -1;
+                        if(p.x < 12 || p.x > canvas.width - 12) p.vx *= -1;
+                        if(p.y < 12 || p.y > canvas.height - 12) p.vy *= -1;
 
-                        // Keep in bounds
-                        p.x = Math.max(6, Math.min(canvas.width - 6, p.x));
-                        p.y = Math.max(6, Math.min(canvas.height - 6, p.y));
+                        p.x = Math.max(12, Math.min(canvas.width - 12, p.x));
+                        p.y = Math.max(12, Math.min(canvas.height - 12, p.y));
 
                         // Draw particle
                         ctx.beginPath();
-                        ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI);
-                        ctx.fillStyle = p.type === 'H' ? '#ef4444' : '#3b82f6';
+                        
+                        if (p.type === 'H2O') {
+                            ctx.arc(p.x, p.y, 14, 0, 2 * Math.PI);
+                            ctx.fillStyle = '#374151'; // Dark gray/blue for H2O
+                        } else {
+                            ctx.arc(p.x, p.y, 10, 0, 2 * Math.PI);
+                            ctx.fillStyle = p.type === 'H' ? '#ef4444' : '#3b82f6';
+                        }
+                        
                         ctx.fill();
                         
                         // Draw label
                         ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 8px sans-serif';
+                        ctx.font = p.type === 'H2O' ? 'bold 10px sans-serif' : 'bold 8px sans-serif';
                         ctx.textAlign = "center";
                         ctx.textBaseline = "middle";
-                        ctx.fillText(p.type === 'H' ? 'H+' : 'OH-', p.x, p.y);
+                        ctx.fillText(p.type === 'H' ? 'H+' : (p.type === 'OH' ? 'OH-' : 'H₂O'), p.x, p.y);
                     });
 
                     animationFrameId = requestAnimationFrame(render);
@@ -118,7 +136,7 @@
                 render();
 
                 return () => cancelAnimationFrame(animationFrameId);
-            }, [H, OH, tempC]); // Re-run animation if concentrations or temp changes
+            }, [H, OH, tempC]); 
 
             return (
                 <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-lg p-8">
@@ -127,10 +145,7 @@
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         
-                        {/* Left Column: Controls and Data */}
                         <div className="space-y-6">
-                            
-                            {/* Temperature Control */}
                             <div className="bg-blue-50 p-5 rounded-lg border border-blue-100">
                                 <label className="block text-sm font-bold text-gray-700 mb-2">
                                     Temperature: {tempC}°C
@@ -145,7 +160,6 @@
                                 <p className="text-xs text-gray-500 mt-2">Notice how K<sub>w</sub> increases as temperature rises. The autoionization of water is endothermic.</p>
                             </div>
 
-                            {/* Acid Control */}
                             <div className="bg-red-50 p-5 rounded-lg border border-red-100">
                                 <label className="block text-sm font-bold text-gray-700 mb-2">
                                     Add Acid (H⁺): {Ca === 0 ? "None" : `${Ca.toExponential(1)} M`}
@@ -160,7 +174,6 @@
                                 <p className="text-xs text-gray-500 mt-2">Slide to increase the amount of strong acid added to the water.</p>
                             </div>
 
-                            {/* Data Panel */}
                             <div className="bg-gray-50 p-5 rounded-lg border border-gray-200">
                                 <h2 className="text-lg font-bold mb-3 border-b pb-2">Calculated Values</h2>
                                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -174,21 +187,19 @@
                             </div>
                         </div>
 
-                        {/* Right Column: Particle View */}
                         <div>
-                            <div className="bg-black rounded-lg overflow-hidden relative shadow-inner">
+                            <div className="bg-gray-900 rounded-lg overflow-hidden relative shadow-inner">
                                 <canvas 
                                     ref={canvasRef} 
                                     width="400" 
                                     height="300" 
                                     className="w-full h-64 object-cover"
                                 ></canvas>
-                                <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
-                                    Particle Level View (Visually Scaled)
+                                <div className="absolute top-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                                    Particle View (Solvent visually scaled)
                                 </div>
                             </div>
                             
-                            {/* Explanation Block */}
                             <div className="mt-6 bg-yellow-50 p-5 rounded-lg border border-yellow-200 text-sm text-gray-800">
                                 <h3 className="font-bold text-lg text-yellow-800 mb-2">Why does [OH⁻] decrease when H⁺ is added?</h3>
                                 <p className="mb-2">
@@ -202,10 +213,9 @@
                                     (<strong>K<sub>w</sub> = [H⁺][OH⁻]</strong>). 
                                 </p>
                                 <p>
-                                    When you add acid, you increase the concentration of H⁺. To keep the K<sub>w</sub> value constant, the system shifts to the <em>left</em>. The extra H⁺ reacts with existing OH⁻ to form liquid water, thereby <strong>consuming OH⁻</strong> and driving its concentration down.
+                                    When you add acid, you increase the concentration of H⁺. To keep the K<sub>w</sub> value constant, the system shifts to the <em>left</em>. The extra H⁺ reacts with existing OH⁻ to form unionized liquid water, thereby <strong>consuming OH⁻</strong> and driving its concentration down.
                                 </p>
                             </div>
-
                         </div>
                     </div>
                 </div>
