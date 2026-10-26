@@ -1,341 +1,55 @@
-import React, { useState, useEffect, useRef } from 'react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kw of Water & Le Chatelier's Principle</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        body { background-color: #f3f4f6; }
+    </style>
+</head>
+<body class="p-6 text-gray-800">
 
-const App = () => {
-  // State for sliders
-  const [temperature, setTemperature] = useState(25); // 0 to 100 Celsius
-  const [acidSlider, setAcidSlider] = useState(0); // 0 to 100 (maps to 0 or 10^-7 to 10^-1 M)
+    <div id="root"></div>
 
-  // Derived state calculations
-  const tempK = temperature + 273.15;
-  // Empirical formula for pKw of water
-  const pKw = (4471 / tempK) + 0.01706 * tempK - 6.0875;
-  const kw = Math.pow(10, -pKw);
+    <script type="text/babel">
+        function App() {
+            const [tempC, setTempC] = React.useState(25);
+            // acidScale: 0 = No acid, 1 to 5 maps to 1e-6M to 1e-2M added acid
+            const [acidScale, setAcidScale] = React.useState(0); 
 
-  // Map acid slider to concentration (Ca)
-  // 0 = 0M. 1 to 100 maps log-linearly from 10^-7 to 10^-1 M
-  const addedAcidConcentration = acidSlider === 0 
-    ? 0 
-    : Math.pow(10, -7 + (acidSlider / 100) * 6);
+            // Thermodynamic calculation of pKw based on temperature
+            const T = tempC + 273.15;
+            // Empirical formula for pKw of water
+            const pKw = (4470.99 / T) - 6.0875 + (0.01706 * T);
+            const Kw = Math.pow(10, -pKw);
 
-  // Calculate actual [H+] and [OH-]
-  // Charge balance / equilibrium: [H+]^2 - Ca[H+] - Kw = 0
-  const hPlus = (addedAcidConcentration + Math.sqrt(Math.pow(addedAcidConcentration, 2) + 4 * kw)) / 2;
-  const ohMinus = kw / hPlus;
-  
-  const pH = -Math.log10(hPlus);
-  const pOH = -Math.log10(ohMinus);
+            // Added acid concentration (Ca)
+            const Ca = acidScale > 0 ? Math.pow(10, -7 + acidScale) : 0;
 
-  // Format helper
-  const formatSci = (val) => {
-    if (val === 0) return "0";
-    const [base, exp] = val.toExponential(2).split('e');
-    return (
-      <span>
-        {base} &times; 10<sup>{parseInt(exp, 10)}</sup>
-      </span>
-    );
-  };
+            // Calculate [H+] and [OH-] using equilibrium and charge balance
+            // [H+][OH-] = Kw  AND  [H+] = [OH-] + Ca
+            // => [H+]^2 - Ca[H+] - Kw = 0
+            const H = (Ca + Math.sqrt(Ca * Ca + 4 * Kw)) / 2;
+            const OH = Kw / H;
 
-  // --- Canvas Particle Engine ---
-  const canvasRef = useRef(null);
-  const particlesRef = useRef({ H2O: [], H: [], OH: [] });
-  const requestRef = useRef();
+            const pH = -Math.log10(H);
+            const pOH = -Math.log10(OH);
 
-  // Helper to create a new particle
-  const createParticle = (type, canvasWidth, canvasHeight) => {
-    const props = {
-      H2O: { radius: 12, color: '#93c5fd', speed: 0.5 }, // blue-300
-      H: { radius: 6, color: '#ef4444', speed: 2.0 },    // red-500
-      OH: { radius: 10, color: '#22c55e', speed: 1.2 }   // green-500
-    };
-    const p = props[type];
-    return {
-      type,
-      x: Math.random() * (canvasWidth - p.radius * 2) + p.radius,
-      y: Math.random() * (canvasHeight - p.radius * 2) + p.radius,
-      vx: (Math.random() - 0.5) * p.speed,
-      vy: (Math.random() - 0.5) * p.speed,
-      radius: p.radius,
-      color: p.color
-    };
-  };
+            const canvasRef = React.useRef(null);
 
-  // Update target particle counts based on pH and pOH
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+            // Particle Animation Effect
+            React.useEffect(() => {
+                const canvas = canvasRef.current;
+                const ctx = canvas.getContext('2d');
+                let animationFrameId;
 
-    // Visual Mapping Logic
-    // We want highly exaggerated counts for visual purposes.
-    // pH 7.5 (0C neutral) -> ~4 particles
-    // pH 7.0 (25C neutral) -> ~8 particles
-    // pH 6.1 (100C neutral) -> ~15 particles
-    // pH 1.0 (High acid) -> ~56 particles
-    // If concentration drops below a threshold, particle count goes to 0.
-    
-    const targetH2O = 30; // Constant background water molecules
-    const targetH = Math.max(0, Math.floor((8 - pH) * 8));
-    const targetOH = Math.max(0, Math.floor((8 - pOH) * 8));
-
-    const updatePool = (pool, targetCount, type) => {
-      if (pool.length < targetCount) {
-        const toAdd = targetCount - pool.length;
-        for (let i = 0; i < toAdd; i++) {
-          pool.push(createParticle(type, canvas.width, canvas.height));
-        }
-      } else if (pool.length > targetCount) {
-        pool.splice(targetCount, pool.length - targetCount);
-      }
-    };
-
-    updatePool(particlesRef.current.H2O, targetH2O, 'H2O');
-    updatePool(particlesRef.current.H, targetH, 'H');
-    updatePool(particlesRef.current.OH, targetOH, 'OH');
-  }, [pH, pOH]);
-
-  // Animation Loop
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-
-    // Handle Resize
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement;
-      canvas.width = parent.clientWidth;
-      canvas.height = parent.clientHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = '#f8fafc'; // slate-50
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      const allParticles = [
-        ...particlesRef.current.H2O,
-        ...particlesRef.current.H,
-        ...particlesRef.current.OH
-      ];
-
-      allParticles.forEach(p => {
-        // Move
-        p.x += p.vx;
-        p.y += p.vy;
-
-        // Bounce off walls
-        if (p.x - p.radius < 0 || p.x + p.radius > canvas.width) {
-          p.vx *= -1;
-          p.x = p.x - p.radius < 0 ? p.radius : canvas.width - p.radius;
-        }
-        if (p.y - p.radius < 0 || p.y + p.radius > canvas.height) {
-          p.vy *= -1;
-          p.y = p.y - p.radius < 0 ? p.radius : canvas.height - p.radius;
-        }
-
-        // Draw
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.fill();
-        ctx.closePath();
-        
-        // Add tiny label for clarity on larger particles
-        if (p.type === 'H2O' || p.type === 'OH') {
-             ctx.fillStyle = '#ffffff';
-             ctx.font = '8px sans-serif';
-             ctx.textAlign = 'center';
-             ctx.textBaseline = 'middle';
-             ctx.fillText(p.type, p.x, p.y);
-        }
-      });
-
-      requestRef.current = requestAnimationFrame(animate);
-    };
-
-    requestRef.current = requestAnimationFrame(animate);
-
-    return () => {
-      cancelAnimationFrame(requestRef.current);
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  return (
-    <div className="min-h-screen bg-slate-100 text-slate-800 p-4 md:p-8 font-sans">
-      <div className="max-w-6xl mx-auto space-y-6">
-        
-        {/* Header */}
-        <header className="text-center space-y-2 mb-8">
-          <h1 className="text-3xl md:text-5xl font-bold text-slate-900 tracking-tight">
-            Water Equilibrium & Acid Perturbation
-          </h1>
-          <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-            Explore how temperature changes the autoionization constant (K<sub>w</sub>) and visualize Le Chatelier's Principle when an acid is introduced.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          
-          {/* Controls and Data Column */}
-          <div className="lg:col-span-5 space-y-6">
-            
-            {/* Sliders Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h2 className="text-xl font-bold text-slate-800 mb-6 border-b pb-2">System Controls</h2>
-              
-              <div className="mb-8">
-                <div className="flex justify-between items-end mb-2">
-                  <label htmlFor="temp" className="font-semibold text-slate-700">Temperature</label>
-                  <span className="text-2xl font-bold text-blue-600">{temperature}°C</span>
-                </div>
-                <input
-                  id="temp"
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={temperature}
-                  onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>0°C</span>
-                  <span>Neutral pH ~ { ((-Math.log10(Math.pow(10, -((4471 / 273.15) + 0.01706 * 273.15 - 6.0875))))/2).toFixed(2) }</span>
-                  <span>100°C</span>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-end mb-2">
-                  <label htmlFor="acid" className="font-semibold text-slate-700 flex items-center gap-2">
-                    Add Acid (HCl)
-                  </label>
-                  <span className="text-lg font-bold text-red-600">
-                    {acidSlider === 0 ? "0 M" : formatSci(addedAcidConcentration)} M
-                  </span>
-                </div>
-                <input
-                  id="acid"
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={acidSlider}
-                  onChange={(e) => setAcidSlider(parseInt(e.target.value, 10))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-red-600"
-                />
-                <div className="flex justify-between text-xs text-slate-400 mt-1">
-                  <span>Pure Water</span>
-                  <span>Increasing [H⁺] &rarr;</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Readouts Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-              <h2 className="text-xl font-bold text-slate-800 mb-4 border-b pb-2">Measurements</h2>
-              
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <div className="text-sm font-medium text-slate-500">K<sub>w</sub> (at {temperature}°C)</div>
-                  <div className="text-xl font-bold text-slate-800 mt-1">{formatSci(kw)}</div>
-                </div>
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <div className="text-sm font-medium text-slate-500">pK<sub>w</sub></div>
-                  <div className="text-xl font-bold text-slate-800 mt-1">{pKw.toFixed(2)}</div>
-                </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-red-50 to-blue-50 p-5 rounded-xl border border-slate-200 flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-medium text-slate-600">System pH</div>
-                  <div className="text-4xl font-extrabold text-slate-800">{pH.toFixed(2)}</div>
-                </div>
-                {acidSlider === 0 && (
-                   <div className="text-xs font-bold px-3 py-1 bg-green-100 text-green-700 rounded-full shadow-sm">
-                     Neutral
-                   </div>
-                )}
-                {acidSlider > 0 && (
-                   <div className="text-xs font-bold px-3 py-1 bg-red-100 text-red-700 rounded-full shadow-sm">
-                     Acidic
-                   </div>
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4 mt-4">
-                 <div>
-                    <div className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-1">Total [H⁺]</div>
-                    <div className="text-lg font-bold text-slate-700">{formatSci(hPlus)} M</div>
-                 </div>
-                 <div>
-                    <div className="text-xs font-semibold text-blue-500 uppercase tracking-wider mb-1">Total [OH⁻]</div>
-                    <div className="text-lg font-bold text-slate-700">{formatSci(ohMinus)} M</div>
-                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Visualization Column */}
-          <div className="lg:col-span-7 flex flex-col space-y-6">
-            
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex-grow flex flex-col">
-              <div className="flex justify-between items-center border-b pb-2 mb-4">
-                <h2 className="text-xl font-bold text-slate-800">Particle-Level View</h2>
-                <div className="flex gap-4 text-xs font-medium text-slate-600">
-                   <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-blue-300 inline-block"></span> H₂O</div>
-                   <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-red-500 inline-block"></span> H⁺</div>
-                   <div className="flex items-center gap-1"><span className="w-3 h-3 rounded-full bg-green-500 inline-block"></span> OH⁻</div>
-                </div>
-              </div>
-              
-              <div className="relative w-full flex-grow min-h-[350px] rounded-xl overflow-hidden border-2 border-slate-200 bg-slate-50 shadow-inner">
-                <canvas 
-                  ref={canvasRef} 
-                  className="absolute inset-0 w-full h-full"
-                />
-                
-                <div className="absolute bottom-2 left-2 right-2 text-center text-[10px] text-slate-400 bg-white/80 backdrop-blur rounded px-2 py-1">
-                  *Disclaimer: Ion concentrations and sizes are highly exaggerated for visual purposes. In reality, H₂O outnumbers ions by orders of magnitude.
-                </div>
-              </div>
-            </div>
-
-            {/* Educational Text */}
-            <div className="bg-slate-800 text-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-blue-300 mb-2">What is happening here?</h3>
-              
-              {acidSlider === 0 ? (
-                <div className="text-sm text-slate-300 space-y-2">
-                  <p>
-                    <strong>Temperature Effect:</strong> The autoionization of water (<span className="font-mono text-xs">H₂O ⇌ H⁺ + OH⁻</span>) is an <em>endothermic</em> process. As you increase the temperature, Le Chatelier's Principle states the system will shift right to absorb the heat. 
-                  </p>
-                  <p>
-                    This generates more H⁺ and OH⁻ ions equally. Because [H⁺] increases, the pH drops below 7.0, <strong>but the water remains completely neutral</strong> because [H⁺] still perfectly equals [OH⁻].
-                  </p>
-                </div>
-              ) : (
-                <div className="text-sm text-slate-300 space-y-3">
-                  <p>
-                    <strong>Adding Acid & Le Chatelier's Principle:</strong> When you add an acid (like HCl), you introduce a massive spike of H⁺ ions into the system. 
-                  </p>
-                  <div className="bg-slate-700 p-3 rounded-lg border border-slate-600 font-mono text-center text-blue-200 shadow-inner">
-                    K<sub>w</sub> = [H⁺] &times; [OH⁻] = Constant (at {temperature}°C)
-                  </div>
-                  <p>
-                    Because the equilibrium constant (K<sub>w</sub>) must remain exactly the same at any specific temperature, a large increase in [H⁺] means the [OH⁻] <strong>must decrease</strong> proportionally so their product remains constant.
-                  </p>
-                  <p>
-                    <strong>How it happens chemically:</strong> According to Le Chatelier's principle, the system opposes the disturbance. The newly added excess H⁺ ions react with the available OH⁻ ions, shifting the equilibrium to the left (<span className="font-mono text-xs text-blue-300">H⁺ + OH⁻ &rarr; H₂O</span>). This consumes the OH⁻ ions, drastically driving their concentration down to near zero.
-                  </p>
-                </div>
-              )}
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default App;
+                // Visual scaling (pseudo-logarithmic) so particles fit on screen
+                // Neutral water at 25C (
